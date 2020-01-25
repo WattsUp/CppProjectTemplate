@@ -25,5 +25,12 @@ double Complex::getReal() const { return real; }
  */
 double Complex::getImag() const { return imag; }
 
+/**
+ * @brief Get the magnitude of the complex number
+ *
+ * @return double
+ */
+double Complex::getMagnitude() const { return real * real + imag * imag; }
+
 } // namespace math
 } // namespace module
