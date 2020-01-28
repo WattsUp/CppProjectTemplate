@@ -1,5 +1,5 @@
 set (SRCS
-  Logging.cpp
+  "Logging.cpp"
 )
 
-add_executable(ProjectTemplate SRCS)
+target_sources(ProjectTemplate PRIVATE ${SRCS})

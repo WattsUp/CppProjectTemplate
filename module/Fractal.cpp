@@ -2,6 +2,11 @@
 
 #include "common/Logging.hpp"
 
+#ifdef WIN32
+#include <Windows.h>
+#endif /* WIN32 */
+
+#include <stdio.h>
 #include <exception>
 
 namespace module {
@@ -13,9 +18,9 @@ namespace module {
 Fractal::Fractal() {
   for (size_t y = 0; y < FRACTAL_SIZE; ++y) {
     for (size_t x = 0; x < FRACTAL_SIZE; ++x) {
-      // Fractal is -1.5 to 1.5
-      math::Complex seed(x * 3.0 / FRACTAL_SIZE - 1.5,
-                         y * 3.0 / FRACTAL_SIZE - 1.5);
+      // Fractal is -1.0 to 1.0
+      math::Complex seed(x * 2.0 / FRACTAL_SIZE - 1.0,
+                         y * 2.0 / FRACTAL_SIZE - 1.0);
       fractal[y][x] = countInterations(seed);
     }
   }
@@ -29,8 +34,9 @@ Fractal::Fractal() {
  */
 uint8_t Fractal::countInterations(math::Complex seed) {
   uint8_t count = 0;
-  while (count < 255 && seed.getMagnitude() < 1.0) {
-    seed = seed * seed + math::Complex(0.1, 0.1);
+  math::Complex value(0, 0);
+  while (count < 255 && value.getMagnitude() < 1.0) {
+    value = value * value + seed;
     ++count;
   }
   return count;
@@ -59,15 +65,24 @@ void Fractal::print() {
  *
  * @return int zero on success, non-zero on failure
  */
-int main() {
+#ifdef WIN32
+int WINAPI WinMain(HINSTANCE /* hInstance */,
+                   HINSTANCE /* hPrevInstance */,
+                   char* /* args */,
+                   int /* nShowCmd */) {
+#else  /* WIN32 */
+int main(int argc, char* argv[]) {
+#endif /* WIN32 */
+
   try {
     common::logging::configure("log.log", true);
   } catch (const std::exception& e) {
-    // printf(e.what());
+    printf(e.what());
   }
 
   module::Fractal fractal;
   fractal.print();
+  std::this_thread::sleep_for(std::chrono::seconds(2));
 
   return 0;
 }

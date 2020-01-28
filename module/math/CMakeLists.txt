@@ -1,5 +1,6 @@
+
 set (SRCS
-  Complex.cpp
+  "Complex.cpp"
 )
 
-add_executable(ProjectTemplate SRCS)
+target_sources(ProjectTemplate PRIVATE ${SRCS})
