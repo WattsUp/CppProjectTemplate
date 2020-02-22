@@ -50,7 +50,7 @@ void configure(const char* filename, bool useConsole) {
   spdlog::set_level(spdlog::level::debug);
 #endif
 
-  spdlog::set_pattern("[%P:%t:%m%d/%H:%M:%S.%e][%=8l][%g(%#)] %v");
+  spdlog::set_pattern("[%P:%t:%m%d/%H:%M:%S.%e][%=8l] %v");
 }
 }  // namespace logging
 }  // namespace common

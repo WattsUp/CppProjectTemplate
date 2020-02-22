@@ -54,7 +54,7 @@ void Fractal::print() {
       // Fractal is -1.5 to 1.5
       buf[x] = (fractal[y][x] >> 5) + '0';
     }
-    SPDLOG_INFO(buf);
+    spdlog::info(buf);
   }
 }
 
