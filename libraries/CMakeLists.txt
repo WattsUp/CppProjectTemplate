@@ -3,5 +3,5 @@ set ( LIBRARY_INCLUDES
 )
 
 foreach(target ${TARGETS})
-  target_include_directories(${target} PRIVATE ${LIBRARY_INCLUDES})
+  target_include_directories(${target} SYSTEM PRIVATE ${LIBRARY_INCLUDES})
 endforeach()
