@@ -76,6 +76,6 @@ include_directories(include)
 
 # Add each subdirectory
 add_subdirectory(common)
-add_subdirectory(installer)
-add_subdirectory(module)
+add_subdirectory(project-installer)
+add_subdirectory(project-fractal)
 add_subdirectory(tools)
