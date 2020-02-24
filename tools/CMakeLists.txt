@@ -4,4 +4,4 @@ set (SRCS
   ""
 )
 
-target_sources(ProjectTemplate PRIVATE ${SRCS})
+target_sources(Fractal PRIVATE ${SRCS})

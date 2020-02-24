@@ -38,8 +38,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/bin")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/bin")
 
 set (TARGETS
-  "ProjectTemplate" # Main executable
-  "Installer"       # Used to install the software onto the user's computer, setup environment, etc.
+  "Fractal"   # Main executable
+  "Installer" # Used to install the software onto the user's computer, setup environment, etc.
 )
 
 # Remove existing /W0-4 flag before adding the desired one
