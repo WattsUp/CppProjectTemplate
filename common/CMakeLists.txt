@@ -2,4 +2,4 @@ set (SRCS
   "Logging.cpp"
 )
 
-target_sources(Fractal PRIVATE ${SRCS})
+target_sources("Fractal" PRIVATE ${SRCS})

@@ -11,7 +11,7 @@ else()
     set( CMAKE_BUILD_TYPE Release CACHE STRING "Set to either \"Release\" or \"Debug\"" )
 endif()
 
-project(ProjectTemplate)
+project("Project Template")
 
 # Global setting: Use C++14
 set(CMAKE_CXX_STANDARD 14)
@@ -68,14 +68,17 @@ foreach(target ${TARGETS})
   target_include_directories(${target} PRIVATE ${CMAKE_SOURCE_DIR})
 endforeach()
 
+# CMake targets cannot have spaces, to have spaces in the output, uncomment and adjust the following
+#set_target_properties(Installer PROPERTIES OUTPUT_NAME "Installer with spaces")
+
 # Add libraries first to setup library include directives
-add_subdirectory(libraries)
+add_subdirectory("libraries")
 
 # Include public interface (for a library)
-include_directories(include)
+include_directories("include")
 
 # Add each subdirectory
-add_subdirectory(common)
-add_subdirectory(project-installer)
-add_subdirectory(project-fractal)
-add_subdirectory(tools)
+add_subdirectory("common")
+add_subdirectory("tools")
+add_subdirectory("project-installer")
+add_subdirectory("project-fractal")

@@ -4,4 +4,4 @@ set (SRCS
   "Fractal.cpp"
 )
 
-target_sources(Fractal PRIVATE ${SRCS})
+target_sources("Fractal" PRIVATE ${SRCS})
