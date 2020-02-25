@@ -17,8 +17,20 @@ project("Project Template")
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Treating warnings as errors is often useful
-
+# Update semantic version from git tag
+set(GIT_EXECUTABLE "git")
+include("tools/GetVersionFromGitTag.cmake")
+# Write common/Version.h
+file(WRITE ${CMAKE_SOURCE_DIR}/common/Version.h
+  "#define VERSION_STRING_FULL \"" ${${PROJECT_NAME}_VERSION_STRING_FULL} "\"\n"
+  "#define VERSION_STRING \"" ${${PROJECT_NAME}_VERSION_STRING} "\"\n"
+  "#define VERSION_MAJOR " ${${PROJECT_NAME}_VERSION_MAJOR} "\n"
+  "#define VERSION_MINOR " ${${PROJECT_NAME}_VERSION_MINOR} "\n"
+  "#define VERSION_PATCH " ${${PROJECT_NAME}_VERSION_PATCH} "\n"
+  "#define VERSION_TWEAK \"" ${${PROJECT_NAME}_VERSION_TWEAK} "\"\n"
+  "#define VERSION_AHEAD " ${${PROJECT_NAME}_VERSION_AHEAD} "\n"
+  "#define VERSION_GIT_SHA \"" ${${PROJECT_NAME}_VERSION_GIT_SHA} "\"\n"
+)
 
 if( WIN32 )
     # define UNICODE and_UNICODE definition on Windows

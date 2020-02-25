@@ -44,7 +44,7 @@ Configure the project with default compiler and compile
 1. Open the project folder in VSCode with the recommended extensions
 2. Open the CMake Tools tab
 3. Select `Configure All Projects`, select appropriate compiler
-4. Click Build `All Projects`
+4. Click `Build All Projects`
 
 ## Folder Structure ##
 * `bin`       Binary folder, output directory for executables, add runtime resources here (icons, etc.)

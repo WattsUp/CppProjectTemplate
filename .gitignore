@@ -2,6 +2,10 @@
 *.vscode
 *.code-workspace
 
+# Automatically generated version #define file
+common/Version.h
+VERSION
+
 # Build artifacts
 build
 *.log

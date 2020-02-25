@@ -1,6 +1,7 @@
 #include "Fractal.hpp"
 
 #include "common/Logging.hpp"
+#include "common/Version.h"
 
 #ifdef WIN32
 #include <Windows.h>
@@ -79,6 +80,8 @@ int main(int argc, char* argv[]) {
   } catch (const std::exception& e) {
     printf(e.what());
   }
+
+  spdlog::info(VERSION_STRING);
 
   module::Fractal fractal;
   fractal.print();
