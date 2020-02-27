@@ -29,6 +29,7 @@ file(WRITE ${CMAKE_SOURCE_DIR}/common/Version.h
   "#define VERSION_PATCH " ${${PROJECT_NAME}_VERSION_PATCH} "\n"
   "#define VERSION_TWEAK \"" ${${PROJECT_NAME}_VERSION_TWEAK} "\"\n"
   "#define VERSION_AHEAD " ${${PROJECT_NAME}_VERSION_AHEAD} "\n"
+  "#define VERSION_MODIFIED " ${${PROJECT_NAME}_MODIFIED} "\n"
   "#define VERSION_GIT_SHA \"" ${${PROJECT_NAME}_VERSION_GIT_SHA} "\"\n"
 )
 
