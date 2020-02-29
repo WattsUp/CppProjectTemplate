@@ -1,5 +1,7 @@
 #include "Complex.hpp"
 
+#include <cmath>
+
 namespace module {
 namespace math {
 
@@ -16,21 +18,27 @@ Complex::Complex(double r, double i) : real(r), imag(i) {}
  *
  * @return double
  */
-double Complex::getReal() const { return real; }
+double Complex::getReal() const {
+  return real;
+}
 
 /**
  * @brief Get the imaginary component
  *
  * @return double
  */
-double Complex::getImag() const { return imag; }
+double Complex::getImag() const {
+  return imag;
+}
 
 /**
  * @brief Get the magnitude of the complex number
  *
  * @return double
  */
-double Complex::getMagnitude() const { return real * real + imag * imag; }
+double Complex::getMagnitude() const {
+  return sqrt(real * real + imag * imag);
+}
 
-} // namespace math
-} // namespace module
+}  // namespace math
+}  // namespace module

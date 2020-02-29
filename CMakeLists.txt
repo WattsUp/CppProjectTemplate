@@ -53,6 +53,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/bin")
 set (TARGETS
   "Fractal"   # Main executable
   "Installer" # Used to install the software onto the user's computer, setup environment, etc.
+  "Test"      # Unit tester common to all projects
 )
 
 # Remove existing /W0-4 flag before adding the desired one
@@ -71,10 +72,10 @@ add_compile_options(
 
 foreach(target ${TARGETS})
   # Create the executable target
-  if( WIN32 )
-    add_executable(${target} WIN32)
-  else()
+  if(!WIN32 OR (${target} STREQUAL "Test"))
     add_executable(${target})
+  else()
+    add_executable(${target} WIN32)
   endif()
 
   # Add the root as an include directory: i.e. #include "common/Logging.hpp" from any level
@@ -95,3 +96,5 @@ add_subdirectory("common")
 add_subdirectory("tools")
 add_subdirectory("project-installer")
 add_subdirectory("project-fractal")
+
+target_link_libraries("Test" gtest)

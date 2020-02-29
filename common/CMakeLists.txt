@@ -3,3 +3,9 @@ set (SRCS
 )
 
 target_sources("Fractal" PRIVATE ${SRCS})
+
+set (TEST_SRCS
+  "TestMain.cpp"
+)
+
+target_sources("Test" PRIVATE ${TEST_SRCS})
