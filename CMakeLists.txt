@@ -72,14 +72,18 @@ add_compile_options(
 
 foreach(target ${TARGETS})
   # Create the executable target
-  if(!WIN32 OR (${target} STREQUAL "Test"))
+  if(!WIN32)
     add_executable(${target})
+  elseif(${target} STREQUAL "Test")
+    add_executable(${target})
+    target_compile_definitions(${target} PUBLIC WIN_CONSOLE)
   else()
     add_executable(${target} WIN32)
   endif()
 
   # Add the root as an include directory: i.e. #include "common/Logging.hpp" from any level
   target_include_directories(${target} PRIVATE ${CMAKE_SOURCE_DIR})
+  target_compile_definitions(${target} PUBLIC "$<$<CONFIG:DEBUG>:DEBUG>")
 endforeach()
 
 # CMake targets cannot have spaces, to have spaces in the output, uncomment and adjust the following
