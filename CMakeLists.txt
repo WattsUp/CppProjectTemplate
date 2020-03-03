@@ -70,6 +70,9 @@ add_compile_options(
   $<$<CXX_COMPILER_ID:MSVC>:/WX>
   $<$<CXX_COMPILER_ID:MSVC>:/W4>)
 
+# Add the suffix "d" to debug builds
+set(CMAKE_DEBUG_POSTFIX "d")
+
 foreach(target ${TARGETS})
   # Create the executable target
   if(!WIN32)
@@ -84,6 +87,7 @@ foreach(target ${TARGETS})
   # Add the root as an include directory: i.e. #include "common/Logging.hpp" from any level
   target_include_directories(${target} PRIVATE ${CMAKE_SOURCE_DIR})
   target_compile_definitions(${target} PUBLIC "$<$<CONFIG:DEBUG>:DEBUG>")
+  set_target_properties(${target} PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
 endforeach()
 
 # CMake targets cannot have spaces, to have spaces in the output, uncomment and adjust the following
