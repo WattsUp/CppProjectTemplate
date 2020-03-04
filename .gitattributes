@@ -6,6 +6,7 @@
 *.txt text eol=lf
 *.md text eol=lf
 *.cmake text eol=lf
+*.py text eol=lf
 .clang-format text eol=lf
 .gitattributes text eol=lf
 .gitignore text eol=lf
