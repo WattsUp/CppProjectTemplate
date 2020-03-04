@@ -17,6 +17,9 @@ project("Project Template")
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Generate compile commands for clang-tidy
+set(CMAKE_EXPORT_COMPILE_COMMANDS on)
+
 # Update semantic version from git tag
 set(GIT_EXECUTABLE "git")
 include("tools/GetVersionFromGitTag.cmake")
