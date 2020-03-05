@@ -21,11 +21,12 @@ def getFileList(git, pattern):
   Get a list of all files (caring for gitignore) that match the regex pattern
   """
   files = []
-  result = subprocess.run(
-      [git, "ls-files", "--exclude-standard", "--modified", "--others", "--cached"], capture_output=True, text=True)
-  for filename in result.stdout.split('\n'):
-    if re.match(pattern, filename) and filename not in files:
-      files.append(filename)
+  result = subprocess.Popen(
+      [git, "ls-files", "--exclude-standard", "--modified", "--others", "--cached"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+  if result.communicate()[0] is not None:
+    for filename in result.communicate()[0].split('\n'):
+      if re.match(pattern, filename) and filename not in files:
+        files.append(filename)
   return files
 
 
@@ -35,20 +36,22 @@ def getChangedFileList(git, pattern, indexOnly):
   indexOnly will only check files added to the index (git add FILE)
   """
   files = []
-  result = subprocess.run(
-      [git, "diff-index", "--cached", "--name-only", "HEAD"], capture_output=True, text=True)
-  for filename in result.stdout.split('\n'):
-    if re.match(pattern, filename) and filename not in files:
-      files.append(filename)
+  result = subprocess.Popen(
+      [git, "diff-index", "--cached", "--name-only", "HEAD"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+  if result.communicate()[0] is not None:
+    for filename in result.communicate()[0].split('\n'):
+      if re.match(pattern, filename) and filename not in files:
+        files.append(filename)
 
   if(indexOnly):
     return files
 
-  result = subprocess.run(
-      [git, "ls-files", "--exclude-standard", "--modified", "--others"], capture_output=True, text=True)
-  for filename in result.stdout.split('\n'):
-    if re.match(pattern, filename) and filename not in files:
-      files.append(filename)
+  result = subprocess.Popen(
+      [git, "ls-files", "--exclude-standard", "--modified", "--others"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+  if result.communicate()[0] is not None:
+    for filename in result.communicate()[0].split('\n'):
+      if re.match(pattern, filename) and filename not in files:
+        files.append(filename)
   return files
 
 
@@ -65,7 +68,7 @@ def runClang(clangFormat, clangTidy, buildPath, queue, lock, failedCommands,
 
       try:
         proc = subprocess.Popen(
-            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
       except Exception:
         queue.task_done()
         failedCommands.append(' '.join(cmd))
@@ -93,7 +96,7 @@ def runClang(clangFormat, clangTidy, buildPath, queue, lock, failedCommands,
 
       try:
         proc = subprocess.Popen(
-            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
       except Exception:
         queue.task_done()
         failedCommands.append(' '.join(cmd))
@@ -191,7 +194,7 @@ def main():
     files = getChangedFileList(
         args.git_binary, re.compile(args.regex), args.index)
 
-  headerFilter = "(project|common)"
+  headerFilter = "$(project|common)"
 
   returnCode = 0
   maxTasks = args.j
