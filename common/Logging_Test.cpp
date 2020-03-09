@@ -2,21 +2,25 @@
 
 #include <gtest/gtest.h>
 
+// NOLINTNEXTLINE
 TEST(Logging, NoSinks) {
   common::logging::configure(nullptr, false);
   EXPECT_EQ(size_t{0}, spdlog::default_logger()->sinks().size());
 }
 
+// NOLINTNEXTLINE
 TEST(Logging, FileSink) {
   common::logging::configure("log.log", false);
   EXPECT_EQ(size_t{1}, spdlog::default_logger()->sinks().size());
 }
 
+// NOLINTNEXTLINE
 TEST(Logging, ConsoleSink) {
   common::logging::configure(nullptr, true);
   EXPECT_EQ(size_t{1}, spdlog::default_logger()->sinks().size());
 }
 
+// NOLINTNEXTLINE
 TEST(Logging, FileAndConsoleSink) {
   common::logging::configure("log.log", true);
   spdlog::debug("debug Test");

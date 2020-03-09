@@ -1,4 +1,12 @@
 ---
-Checks: 'modernize*'
+Checks: '-*,
+        bugprone-*,
+        cppcoreguidelines-*,
+        clang-analyzer-*,
+        google-*,
+        modernize-*,
+        performance-*,
+        portability-*,
+        readability-*'
 FormatStyle: file
 ...
