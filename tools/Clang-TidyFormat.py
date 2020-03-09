@@ -65,7 +65,7 @@ def getChangedFileList(git, pattern, indexOnly):
 
 
 def runTidy(clangTidy, queue, lock, failedCommands,
-            buildPath, headerFilter, tmpdir, quiet):
+            buildPath, headerFilter, tmpdir, quiet, verbose):
   while True:
     name = queue.get()
 
@@ -83,6 +83,8 @@ def runTidy(clangTidy, queue, lock, failedCommands,
       cmd.append(tmpfile)
     cmd.append(name)
 
+    if verbose:
+      print(' '. join(cmd))
     try:
       proc = subprocess.Popen(
           cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
@@ -95,13 +97,13 @@ def runTidy(clangTidy, queue, lock, failedCommands,
     if proc.returncode != 0:
       failedCommands.append(' '.join(cmd))
     with lock:
-      if not quiet:
-        sys.stdout.write(' '.join(cmd) + '\n' + output)
+      if not quiet or len(output) > 0:
+        sys.stdout.write('Tidying ' + name + '\n' + output)
     queue.task_done()
 
 
 def runFormat(clangFormat, queue, lock, failedCommands,
-              toFormatFiles, fix, quiet):
+              toFormatFiles, fix, quiet, verbose):
   while True:
     name = queue.get()
 
@@ -112,6 +114,8 @@ def runFormat(clangFormat, queue, lock, failedCommands,
       cmd.append("-output-replacements-xml")
     cmd.append(name)
 
+    if verbose:
+      print(' '. join(cmd))
     try:
       proc = subprocess.Popen(
           cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
@@ -124,11 +128,13 @@ def runFormat(clangFormat, queue, lock, failedCommands,
     if proc.returncode != 0:
       failedCommands.append(' '.join(cmd))
     with lock:
-      if fix and not quiet:
-        sys.stdout.write(' '.join(cmd) + '\n')
-      else:
-        if "<replacement " in output:
-          toFormatFiles.append(name)
+      if not quiet:
+        if fix:
+          sys.stdout.write('Formatted ' + name + '\n')
+        else:
+          sys.stdout.write('Checked formatting of ' + name + '\n')
+      if "<replacement " in output:
+        toFormatFiles.append(name)
       if len(err) > 0:
         sys.stdout.flush()
         sys.stderr.write(err)
@@ -183,7 +189,9 @@ def main():
   parser.add_argument('--fix', action='store_true', default=False,
                       help='apply formatting fixes')
   parser.add_argument('--quiet', action='store_true', default=False,
-                      help='only output return codes and exceptions')
+                      help='only output return codes and errors')
+  parser.add_argument('-v', action='store_true', default=False,
+                      help='output commands being run')
 
   argv = sys.argv[1:]
   args = parser.parse_args(argv)
@@ -193,7 +201,12 @@ def main():
     parser.print_help()
     sys.exit(0)
 
+  if args.v:
+    args.quiet = False
+
   try:
+    if args.v:
+      print("Checking call git")
     subprocess.check_call(
         [args.git_binary, '--version'], stdout=subprocess.DEVNULL)
   except BaseException:
@@ -204,6 +217,8 @@ def main():
     sys.exit(1)
 
   if args.format:
+    if args.v:
+      print("Checking call clang-format")
     try:
       subprocess.check_call(
           [args.clang_format_binary, '--version'], stdout=subprocess.DEVNULL)
@@ -214,6 +229,8 @@ def main():
       sys.exit(1)
 
   if args.tidy:
+    if args.v:
+      print("Checking call clang-tidy")
     try:
       subprocess.check_call(
           [args.clang_tidy_binary, '--version'], stdout=subprocess.DEVNULL)
@@ -241,6 +258,8 @@ def main():
 
   tmpdir = None
   if args.fix:
+    if args.v:
+      print("Checking call clang-apply-replacements")
     try:
       subprocess.check_call(
           [args.clang_apply_replacements_binary, '--version'], stdout=subprocess.DEVNULL)
@@ -262,7 +281,7 @@ def main():
       for _ in range(maxTasks):
         t = threading.Thread(target=runTidy,
                              args=(args.clang_tidy_binary, taskQueue, lock, failedCommands,
-                                   args.p, args.header_filter, tmpdir, args.quiet))
+                                   args.p, args.header_filter, tmpdir, args.quiet, args.v))
         t.daemon = True
         t.start()
 
@@ -302,7 +321,7 @@ def main():
       for _ in range(maxTasks):
         t = threading.Thread(target=runFormat,
                              args=(args.clang_format_binary, taskQueue, lock, failedCommands,
-                                   toFormatFiles, args.fix, args.quiet))
+                                   toFormatFiles, args.fix, args.quiet, args.v))
         t.daemon = True
         t.start()
 
@@ -320,11 +339,10 @@ def main():
 
       if len(toFormatFiles):
         returnCode = 1
-        if not args.quiet:
-          print("Need to format:")
-          for file in toFormatFiles:
-            print(file)
-      elif not args.quiet and args.format:
+        print("Need to format:")
+        for file in toFormatFiles:
+          print(file)
+      elif not args.quiet and args.format and not args.fix:
         print("No files need to be formatted")
 
   except KeyboardInterrupt:
