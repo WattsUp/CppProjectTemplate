@@ -11,8 +11,10 @@ import multiprocessing
 import os
 import queue
 import re
+import shutil
 import subprocess
 import sys
+import tempfile
 import threading
 import traceback
 
@@ -63,7 +65,7 @@ def getChangedFileList(git, pattern, indexOnly):
 
 
 def runTidy(clangTidy, queue, lock, failedCommands,
-            buildPath, headerFilter, fix, quiet):
+            buildPath, headerFilter, tmpdir, quiet):
   while True:
     name = queue.get()
 
@@ -72,13 +74,14 @@ def runTidy(clangTidy, queue, lock, failedCommands,
         "-p",
         buildPath,
         "-header-filter=" + headerFilter]
-    if fix:
-      cmd.append("-fix")
+    if tmpdir is not None:
+      cmd.append('-export-fixes')
+      # Get a temporary file. We immediately close the handle so clang-tidy can
+      # overwrite it.
+      (handle, tmpfile) = tempfile.mkstemp(suffix='.yaml', dir=tmpdir)
+      os.close(handle)
+      cmd.append(tmpfile)
     cmd.append(name)
-    if re.match(r'.*\.(h|hpp)$', name):
-      print("header")
-      queue.task_done()
-      continue
 
     try:
       proc = subprocess.Popen(
@@ -92,7 +95,8 @@ def runTidy(clangTidy, queue, lock, failedCommands,
     if proc.returncode != 0:
       failedCommands.append(' '.join(cmd))
     with lock:
-      sys.stdout.write(' '.join(cmd) + '\n' + output)
+      if not quiet:
+        sys.stdout.write(' '.join(cmd) + '\n' + output)
     queue.task_done()
 
 
@@ -154,6 +158,9 @@ def main():
                       help='path to clang-format binary')
   parser.add_argument('--clang-tidy-binary', metavar='PATH',
                       default='clang-tidy',
+                      help='path to clang-tidy binary')
+  parser.add_argument('--clang-apply-replacements-binary', metavar='PATH',
+                      default='clang-apply-replacements',
                       help='path to clang-tidy binary')
   parser.add_argument('--git-binary', metavar='PATH',
                       default='git',
@@ -232,6 +239,21 @@ def main():
   compileCommandFiles = [makeAbsolute(entry['file'], entry['directory'])
                          for entry in database]
 
+  tmpdir = None
+  if args.fix:
+    try:
+      subprocess.check_call(
+          [args.clang_apply_replacements_binary, '--version'], stdout=subprocess.DEVNULL)
+    except BaseException:
+      print(
+          'Unable to run clang apply replacements. Is clang-apply-replacements binary'
+          ' correctly specified?', file=sys.stderr)
+      traceback.print_exc()
+      if tmpdir:
+        shutil.rmtree(tmpdir)
+      sys.exit(1)
+    tmpdir = tempfile.mkdtemp()
+
   try:
     if args.tidy:
       taskQueue = queue.Queue(maxTasks)
@@ -240,7 +262,7 @@ def main():
       for _ in range(maxTasks):
         t = threading.Thread(target=runTidy,
                              args=(args.clang_tidy_binary, taskQueue, lock, failedCommands,
-                                   args.p, args.header_filter, args.fix, args.quiet))
+                                   args.p, args.header_filter, tmpdir, args.quiet))
         t.daemon = True
         t.start()
 
@@ -256,6 +278,21 @@ def main():
         print("Failed executing commands:")
         for cmd in failedCommands:
           print(cmd)
+    
+    if args.fix:
+      if not args.quiet:
+        print("Applying tidy fixes...")
+
+      try:
+        cmd = [args.clang_apply_replacements_binary]
+        cmd.append("-format")
+        cmd.append("-style=file")
+        cmd.append(tmpdir)
+        subprocess.call(cmd)
+      except:
+        print('Error applying fixes.\n', file=sys.stderr)
+        traceback.print_exc()
+        returnCode=1
 
     if args.format:
       taskQueue = queue.Queue(maxTasks)
@@ -292,8 +329,12 @@ def main():
 
   except KeyboardInterrupt:
     print('\nCtrl-C detected, goodbye.')
+    if tmpdir:
+      shutil.rmtree(tmpdir)
     os.kill(0, 9)
 
+  if tmpdir:
+    shutil.rmtree(tmpdir)
   sys.exit(returnCode)
 
 
