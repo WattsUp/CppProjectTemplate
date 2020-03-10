@@ -1,0 +1,45 @@
+#ifndef _FRACTAL_MATH_COMPLEX_H_
+#define _FRACTAL_MATH_COMPLEX_H_
+
+namespace fractal {
+namespace math {
+
+class Complex {
+ private:
+  double real;
+  double imag;
+
+ public:
+  explicit Complex(double r = 0.0, double i = 0.0);
+
+  double getReal() const;
+  double getImag() const;
+  double getMagnitude() const;
+
+  friend Complex operator+(const Complex& left, const Complex& right) {
+    return Complex(left.real + right.real, left.imag + right.imag);
+  }
+
+  friend Complex operator-(const Complex& left, const Complex& right) {
+    return Complex(left.real - right.real, left.imag - right.imag);
+  }
+
+  friend Complex operator*(const Complex& left, const Complex& right) {
+    return Complex(left.real * right.real - left.imag * right.imag,
+                   left.imag * right.real + left.real * right.imag);
+  }
+
+  friend Complex operator/(const Complex& left, const Complex& right) {
+    // Denominator = right * conj(right)
+    double denominator = right.real * right.real + right.imag * right.imag;
+    // Numerator = left * conj(right)
+    return Complex(
+        (left.real * right.real + left.imag * right.imag) / denominator,
+        (left.imag * right.real - left.real * right.imag) / denominator);
+  }
+};
+
+}  // namespace math
+}  // namespace fractal
+
+#endif /* _FRACTAL_MATH_COMPLEX_H_ */

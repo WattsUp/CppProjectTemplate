@@ -13,6 +13,7 @@ Includes
 * Modern C/C++ compiler
 * [CMake 3.11+](https://cmake.org/download/) installed
 * [Clang tools](http://releases.llvm.org/download.html) namely clang-format and clang-tidy
+* [Python >3.6](https://www.python.org/downloads/) for tools
 
 **Recommended IDE** is [VSCode](https://code.visualstudio.com/) with the following extensions
 * [C/C++](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools) language support
@@ -44,7 +45,7 @@ Configure the project with default compiler and compile
 1. Open the project folder in VSCode with the recommended extensions
 2. Open the CMake Tools tab
 3. Select `Configure All Projects`, select appropriate compiler
-4. Click Build `All Projects`
+4. Click `Build All Projects`
 
 ## Folder Structure ##
 * `bin`       Binary folder, output directory for executables, add runtime resources here (icons, etc.)
