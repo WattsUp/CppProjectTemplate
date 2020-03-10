@@ -3,7 +3,8 @@
 
 #include "math/Complex.hpp"
 
-#include <stdint.h>
+#include <array>
+#include <cstdint>
 
 namespace module {
 
@@ -16,9 +17,11 @@ class Fractal {
  private:
   uint8_t countInterations(math::Complex seed);
 
-  static const size_t FRACTAL_SIZE = 32;
+  static constexpr size_t SIZE     = 32;
+  static constexpr double VIEW_MAX = 1.0;
+  static constexpr uint8_t MAX_ITR = 255;
 
-  uint8_t fractal[FRACTAL_SIZE][FRACTAL_SIZE];
+  std::array<std::array<uint8_t, SIZE>, SIZE> fractal{{}};
 };
 
 }  // namespace module

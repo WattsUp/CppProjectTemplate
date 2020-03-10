@@ -10,7 +10,7 @@ class Complex {
   double imag;
 
  public:
-  Complex(double r = 0.0, double i = 0.0);
+  explicit Complex(double r = 0.0, double i = 0.0);
 
   double getReal() const;
   double getImag() const;

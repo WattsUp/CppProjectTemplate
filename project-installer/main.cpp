@@ -8,11 +8,11 @@
 #ifdef WIN32
 int WINAPI WinMain(HINSTANCE /* hInstance */,
                    HINSTANCE /* hPrevInstance */,
-                   char* args,
+                   char* lpCmdLine,
                    int /* nShowCmd */) {
 #else  /* WIN32 */
 int main(int argc, char* argv[]) {
 #endif /* WIN32 */
-  spdlog::info("Installing with arguments: {}", args);
+  spdlog::info("Installing with arguments: {}", lpCmdLine);
   return 0;
 }
