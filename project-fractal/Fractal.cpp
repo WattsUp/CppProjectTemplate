@@ -10,7 +10,7 @@
 #include <cstdio>
 #include <exception>
 
-namespace module {
+namespace fractal {
 
 /**
  * @brief Construct a new Fractal:: Fractal object
@@ -60,7 +60,7 @@ void Fractal::print() {
   }
 }
 
-}  // namespace module
+}  // namespace fractal
 
 /**
  * @brief Main entry point for program
@@ -84,7 +84,7 @@ int main(int argc, char* argv[]) {
 
   spdlog::info(VERSION_STRING);
 
-  module::Fractal fractal;
+  fractal::Fractal fractal;
   fractal.print();
   std::this_thread::sleep_for(std::chrono::seconds(2));
 

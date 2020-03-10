@@ -1,7 +1,7 @@
-#ifndef _MODULE_MATH_COMPLEX_H_
-#define _MODULE_MATH_COMPLEX_H_
+#ifndef _FRACTAL_MATH_COMPLEX_H_
+#define _FRACTAL_MATH_COMPLEX_H_
 
-namespace module {
+namespace fractal {
 namespace math {
 
 class Complex {
@@ -40,6 +40,6 @@ class Complex {
 };
 
 }  // namespace math
-}  // namespace module
+}  // namespace fractal
 
-#endif /* _MODULE_MATH_COMPLEX_H_ */
+#endif /* _FRACTAL_MATH_COMPLEX_H_ */

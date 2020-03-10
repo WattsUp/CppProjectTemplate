@@ -1,12 +1,12 @@
-#ifndef _MODULE_FRACTAL_H_
-#define _MODULE_FRACTAL_H_
+#ifndef _FRACTAL_FRACTAL_H_
+#define _FRACTAL_FRACTAL_H_
 
 #include "math/Complex.hpp"
 
 #include <array>
 #include <cstdint>
 
-namespace module {
+namespace fractal {
 
 class Fractal {
  public:
@@ -24,6 +24,6 @@ class Fractal {
   std::array<std::array<uint8_t, SIZE>, SIZE> fractal{{}};
 };
 
-}  // namespace module
+}  // namespace fractal
 
-#endif /* _MODULE_FRACTAL_H_ */
+#endif /* _FRACTAL_FRACTAL_H_ */
