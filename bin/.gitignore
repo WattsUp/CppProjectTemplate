@@ -1,0 +1,6 @@
+# Built binaries
+*.exe
+*.ilk
+*.pdb
+*.lib
+*.manifest
