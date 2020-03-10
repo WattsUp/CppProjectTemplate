@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-namespace module {
+namespace fractal {
 namespace math {
 
 /**
@@ -41,4 +41,4 @@ double Complex::getMagnitude() const {
 }
 
 }  // namespace math
-}  // namespace module
+}  // namespace fractal

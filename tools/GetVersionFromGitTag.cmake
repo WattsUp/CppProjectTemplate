@@ -1,13 +1,13 @@
 #
-# This cmake module sets the project version and partial version
+# This cmake fractal sets the project version and partial version
 # variables by analysing the git tag and commit history. It expects git
 # tags defined with semantic versioning 2.0.0 (http://semver.org/).
 #
-# The module expects the PROJECT_NAME variable to be set. The project 
+# The fractal expects the PROJECT_NAME variable to be set. The project 
 # version will be updated using information fetched from the
 # most recent git tag and commit
 #
-# Once done, this module will define the following variables:
+# Once done, this fractal will define the following variables:
 #
 # ${PROJECT_NAME}_VERSION_STRING - Version string without metadata
 # such as "v2.0.0" or "v1.2.41-beta.1". This should correspond to the
@@ -24,7 +24,7 @@
 # ${PROJECT_NAME}_MODIFIED - If the reposistory has been modified since last commit (e.g. ~ in v2.3.1-RC.2+~21.ef12c8)
 # ${PROJECT_NAME}_VERSION_GIT_SHA - The git sha1 of the most recent commit (e.g. the "ef12c8" in v2.3.1-RC.2+~21.ef12c8)
 #
-# This module is public domain, use it as it fits you best.
+# This fractal is public domain, use it as it fits you best.
 #
 # Author: Nuno Fachada (modified by Bradley Davis)
 
