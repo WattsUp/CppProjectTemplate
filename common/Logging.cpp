@@ -26,16 +26,18 @@ void configure(const char* filename, bool useConsole) {
   if (useConsole) {
 #ifdef WIN32
 #ifndef WIN_CONSOLE
-    printf("WIN_CONSOLE set");
     // Attempt to create a console
-    if (AllocConsole()) {
+    if (AllocConsole() != 0) {
       HWND hwnd = GetConsoleWindow();
-      if (hwnd) {
+      if (hwnd != nullptr) {
         HMENU hMenu = GetSystemMenu(hwnd, FALSE);
-        if (hMenu)
+        if (hMenu != nullptr) {
           DeleteMenu(hMenu, SC_CLOSE, MF_BYCOMMAND);
+        }
       }
+      // NOLINTNEXTLINE (cppcoreguidelines-pro-type-cstyle-cast)
       freopen_s((FILE**)stdout, "CONOUT$", "w", stdout);
+      // NOLINTNEXTLINE (cppcoreguidelines-pro-type-cstyle-cast)
       freopen_s((FILE**)stderr, "CONOUT$", "w", stderr);
     } else {
       spdlog::error("Error allocing a console: {}", GetLastError());
@@ -50,7 +52,7 @@ void configure(const char* filename, bool useConsole) {
   }
 
   // Create a file sink
-  if (filename) {
+  if (filename != nullptr) {
     sinkFile = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
         filename, MAX_FILE_SIZE, MAX_FILE_COUNT);
 #ifdef DEBUG

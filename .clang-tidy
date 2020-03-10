@@ -4,9 +4,16 @@ Checks: '-*,
         cppcoreguidelines-*,
         clang-analyzer-*,
         google-*,
+        -google-readability-braces-around-statements,
         modernize-*,
         performance-*,
         portability-*,
         readability-*'
-FormatStyle: file
+HeaderFilterRegex: '^[a-zA-Z]'
+FormatStyle: 'file'
+CheckOptions:
+  - key:    readability-braces-around-statements.ShortStatementLines
+    value:  '1'
+  - key:    readability-magic-numbers.IgnorePowersOf2IntegerValues
+    value:  'true'
 ...

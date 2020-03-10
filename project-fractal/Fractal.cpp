@@ -7,7 +7,7 @@
 #include <Windows.h>
 #endif /* WIN32 */
 
-#include <stdio.h>
+#include <cstdio>
 #include <exception>
 
 namespace module {
@@ -17,12 +17,12 @@ namespace module {
  *
  */
 Fractal::Fractal() {
-  for (size_t y = 0; y < FRACTAL_SIZE; ++y) {
-    for (size_t x = 0; x < FRACTAL_SIZE; ++x) {
-      // Fractal is -1.0 to 1.0
-      math::Complex seed(x * 2.0 / FRACTAL_SIZE - 1.0,
-                         y * 2.0 / FRACTAL_SIZE - 1.0);
-      fractal[y][x] = countInterations(seed);
+  for (size_t y = 0; y < SIZE; ++y) {
+    for (size_t x = 0; x < SIZE; ++x) {
+      // Fractal is -VIEW_MAX to VIEW_MAX
+      math::Complex seed(x * VIEW_MAX * 2 / SIZE - VIEW_MAX,
+                         y * VIEW_MAX * 2 / SIZE - VIEW_MAX);
+      fractal.at(y).at(x) = countInterations(seed);
     }
   }
 }
@@ -31,12 +31,12 @@ Fractal::Fractal() {
  * @brief Count the number of iteration required for a seed to diverge
  *
  * @param seed complex number seed
- * @return uint8_t number of iterations, 255 if it did not diverge
+ * @return uint8_t number of iterations, MAX_ITR if it did not diverge
  */
 uint8_t Fractal::countInterations(math::Complex seed) {
   uint8_t count = 0;
   math::Complex value(0, 0);
-  while (count < 255 && value.getMagnitude() < 1.0) {
+  while (count < MAX_ITR && value.getMagnitude() < 1.0) {
     value = value * value + seed;
     ++count;
   }
@@ -48,14 +48,15 @@ uint8_t Fractal::countInterations(math::Complex seed) {
  *
  */
 void Fractal::print() {
-  for (size_t y = 0; y < FRACTAL_SIZE; ++y) {
-    char buf[FRACTAL_SIZE + 1];
-    buf[FRACTAL_SIZE] = '\0';
-    for (size_t x = 0; x < FRACTAL_SIZE; ++x) {
+  for (size_t y = 0; y < SIZE; ++y) {
+    std::array<char, SIZE + 1> buf{""};
+    buf.at(SIZE) = '\0';
+    for (size_t x = 0; x < SIZE; ++x) {
       // Fractal is -1.5 to 1.5
-      buf[x] = (fractal[y][x] >> 5) + '0';
+      // NOLINTNEXTLINE (bug-prone-narrowing-conversions)
+      buf.at(x) = (fractal.at(y).at(x) >> uint8_t{5}) + '0';
     }
-    spdlog::info(buf);
+    spdlog::info(buf.data());
   }
 }
 
@@ -78,7 +79,7 @@ int main(int argc, char* argv[]) {
   try {
     common::logging::configure("log.log", true);
   } catch (const std::exception& e) {
-    printf(e.what());
+    puts(e.what());
   }
 
   spdlog::info(VERSION_STRING);

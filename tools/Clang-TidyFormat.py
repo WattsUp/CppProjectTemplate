@@ -65,7 +65,7 @@ def getChangedFileList(git, pattern, indexOnly):
 
 
 def runTidy(clangTidy, queue, lock, failedCommands,
-            buildPath, headerFilter, tmpdir, quiet, verbose):
+            buildPath, tmpdir, quiet, verbose):
   while True:
     name = queue.get()
 
@@ -73,7 +73,7 @@ def runTidy(clangTidy, queue, lock, failedCommands,
         clangTidy,
         "-p",
         buildPath,
-        "-header-filter=" + headerFilter]
+        "-quiet"]
     if tmpdir is not None:
       cmd.append('-export-fixes')
       # Get a temporary file. We immediately close the handle so clang-tidy can
@@ -93,12 +93,15 @@ def runTidy(clangTidy, queue, lock, failedCommands,
       failedCommands.append(' '.join(cmd))
       continue
 
-    output = proc.communicate()[0]
+    output, err = proc.communicate()
     if proc.returncode != 0:
       failedCommands.append(' '.join(cmd))
     with lock:
       if not quiet or len(output) > 0:
         sys.stdout.write('Tidying ' + name + '\n' + output)
+        sys.stdout.flush()
+      if "warnings generated" not in err or verbose:
+        print(err)
     queue.task_done()
 
 
@@ -171,13 +174,10 @@ def main():
   parser.add_argument('--git-binary', metavar='PATH',
                       default='git',
                       help='path to git binary')
-  parser.add_argument('--regex', metavar='PATTERN', default=r'.*\.(cpp|cc|c\+\+|cxx|c|h|hpp)$',
+  parser.add_argument('--regex', metavar='PATTERN', default=r'^((?!test).)*\.(cpp|cc|c\+\+|cxx|c|h|hpp)$',
                       help='custom pattern selecting file paths to check '
                       '(case insensitive). Ignore third-party and lib files: '
                       '"^((?!(third-party|lib)).)*\\.(cpp|cc|c\\+\\+|cxx|c|h|hpp)$"')
-  parser.add_argument('--header-filter', metavar='PATTERN', default="^[a-zA-Z]",
-                      help='custom header filter passed to clang-tidy. Default ^[a-zA-Z]'
-                      ' checks all user files, ignoreing libraries (..\\libraries\\.*)')
   parser.add_argument('-j', type=int, default=0,
                       help='number of clang-format instances to be run in parallel.')
   parser.add_argument('-a', action='store_true', default=False,
@@ -242,10 +242,10 @@ def main():
 
   files = []
   if args.a:
-    files = getFileList(args.git_binary, re.compile(args.regex))
+    files = getFileList(args.git_binary, re.compile(args.regex, re.IGNORECASE))
   else:
     files = getChangedFileList(
-        args.git_binary, re.compile(args.regex), args.index)
+        args.git_binary, re.compile(args.regex, re.IGNORECASE), args.index)
 
   returnCode = 0
   maxTasks = args.j
@@ -281,7 +281,7 @@ def main():
       for _ in range(maxTasks):
         t = threading.Thread(target=runTidy,
                              args=(args.clang_tidy_binary, taskQueue, lock, failedCommands,
-                                   args.p, args.header_filter, tmpdir, args.quiet, args.v))
+                                   args.p, tmpdir, args.quiet, args.v))
         t.daemon = True
         t.start()
 
