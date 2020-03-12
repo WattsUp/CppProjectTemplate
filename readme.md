@@ -11,9 +11,10 @@ Includes
 
 ## Prerequisites ##
 * Modern C/C++ compiler
+* [git 2.17+](https://git-scm.com/downloads) installed
 * [CMake 3.11+](https://cmake.org/download/) installed
-* [Clang tools](http://releases.llvm.org/download.html) namely clang-format and clang-tidy
-* [Python >3.6](https://www.python.org/downloads/) for tools
+* [Clang tools 7.0+](http://releases.llvm.org/download.html) namely clang-format and clang-tidy
+* [Python 3.6+](https://www.python.org/downloads/) for tools
 
 **Recommended IDE** is [VSCode](https://code.visualstudio.com/) with the following extensions
 * [C/C++](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools) language support
@@ -58,7 +59,7 @@ Configure the project with default compiler and compile
 
 ## Adapting ##
 1. Clone the repository, see [Git Clone](#git-clone). (Or download manually)
-2. Run the bash script `tools/SetupProject.sh`. It will guide you through the process. The script checks for all software dependencies (prompts for their installation), modifies top-level project name, modifies targets, resets the git repository to an initial commit, and tags the commit v0.0.0. The only dependency is the ability to run bash scripts.
+2. Run the python script `tools/SetupProject.py`. It will guide you through the process. The script checks for all software dependencies (prompts for their installation), modifies top-level project name, modifies targets, resets the git repository to an initial commit, and tags the commit v0.0.0. The only dependency is the ability to run python scripts.
 
 ### Modify Project Name ###
 Change `project("ProjectTemplate")` to `project("[Top level project name]")` in `./CMakeLists.txt`

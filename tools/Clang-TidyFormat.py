@@ -170,7 +170,7 @@ def main():
                       help='path to clang-tidy binary')
   parser.add_argument('--clang-apply-replacements-binary', metavar='PATH',
                       default='clang-apply-replacements',
-                      help='path to clang-tidy binary')
+                      help='path to clang-apply-replacements binary')
   parser.add_argument('--git-binary', metavar='PATH',
                       default='git',
                       help='path to git binary')
