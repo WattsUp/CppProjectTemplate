@@ -11,7 +11,7 @@ else()
     set( CMAKE_BUILD_TYPE Release CACHE STRING "Set to either \"Release\" or \"Debug\"" )
 endif()
 
-project("Project Template")
+project("project-template")
 
 # Global setting: Use C++14
 set(CMAKE_CXX_STANDARD 14)
@@ -57,9 +57,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/bin")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/bin")
 
 set (TARGETS
-  "Fractal"   # Main executable
-  "Installer" # Used to install the software onto the user's computer, setup environment, etc.
-  "Test"      # Unit tester common to all projects
+  "test"      # Unit tester common to all projects
+  "fractal"   # Main executable
+  "installer" # Used to install the software onto the user's computer, setup environment, etc.
 )
 
 # Remove existing /W0-4 flag before adding the desired one
@@ -83,7 +83,7 @@ foreach(target ${TARGETS})
   # Create the executable target
   if(!WIN32)
     add_executable(${target})
-  elseif(${target} STREQUAL "Test")
+  elseif(${target} STREQUAL "test")
     add_executable(${target})
     target_compile_definitions(${target} PUBLIC WIN_CONSOLE)
   else()
@@ -97,7 +97,7 @@ foreach(target ${TARGETS})
 endforeach()
 
 # CMake targets cannot have spaces, to have spaces in the output, uncomment and adjust the following
-#set_target_properties(Installer PROPERTIES OUTPUT_NAME "Installer with spaces")
+#set_target_properties(installer PROPERTIES OUTPUT_NAME "installer with spaces")
 
 # Add libraries first to setup library include directives
 add_subdirectory("libraries")
@@ -107,8 +107,7 @@ include_directories("include")
 
 # Add each subdirectory
 add_subdirectory("common")
-add_subdirectory("tools")
-add_subdirectory("project-installer")
 add_subdirectory("project-fractal")
+add_subdirectory("project-installer")
 
-target_link_libraries("Test" gtest)
+target_link_libraries("test" gtest)

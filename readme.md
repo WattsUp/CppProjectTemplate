@@ -54,22 +54,22 @@ Configure the project with default compiler and compile
 * `tools`     Helper code such as check coding conventions script
 
 ### Projects ###
-* `project-installer` Installer executable which sets up directories, variables, etc.
+* `project-installer` installer executable which sets up directories, variables, etc.
 * `project-fractal`   Application to draw a fractal to the console
 
 ## Adapting ##
 1. Clone the repository, see [Git Clone](#git-clone). (Or download manually)
-2. Run the python script `tools/SetupProject.py`. It will guide you through the process. The script checks for all software dependencies (prompts for their installation), modifies top-level project name, modifies targets, resets the git repository to an initial commit, and tags the commit v0.0.0. The only dependency is the ability to run python scripts.
+2. Run the python script `tools/SetupProject.py` from the top level folder. It will guide you through the process. The script checks for all software dependencies (prompts for their installation), modifies top-level project name, modifies targets, resets the git repository to an initial commit, and tags the commit v0.0.0. The only dependency is the ability to run python scripts.
 
 ### Modify Project Name ###
-Change `project("ProjectTemplate")` to `project("[Top level project name]")` in `./CMakeLists.txt`
+Change `project("project-template")` to `project("[top-level-project-name]")` in `./CMakeLists.txt`
 
 ### Modify Sub Projects and Targets ###
 1. Modify/create folders for each sub project, see [Folder Structure](#folder-structure)
 2. Modify/create target names in all `CMakeLists.txt`:
 ```CMake
 set (TARGETS
-  "[Target name 1]" # [Optional comment]
+  "[target-name-1]" # [Optional comment]
   "[Target name 2]" # [Optional comment]
 )
 ```
@@ -85,7 +85,6 @@ set_target_properties([TargetNoSpaces] PROPERTIES OUTPUT_NAME "Target With Space
 ```CMake
 # Add each subdirectory
 add_subdirectory("common")
-add_subdirectory("tools")
 add_subdirectory("project-installer")
 add_subdirectory("project-fractal")
 ```

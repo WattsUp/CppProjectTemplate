@@ -2,4 +2,4 @@ set (SRCS
   "main.cpp"
 )
 
-target_sources("Installer" PRIVATE ${SRCS})
+target_sources("installer" PRIVATE ${SRCS})
