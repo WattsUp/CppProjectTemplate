@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import argparse
+import fileinput
 import sys
 import subprocess
 import traceback
@@ -67,44 +68,74 @@ def checkInstallations(args):
     print("Install clang-apply-replacements version 7.0+")
     sys.exit(1)
 
-  print("Checking working compiler exists")
-  try:
-    subprocess.check_call([args.cmake_binary,
-                           "-E",
-                           "make_directory",
-                           "__temp__"],
-                          stdout=subprocess.DEVNULL)
-    subprocess.check_call([args.cmake_binary,
-                           "-E",
-                           "touch",
-                           "CMakeLists.txt"],
-                          cwd="__temp__",
-                          stdout=subprocess.DEVNULL)
-    subprocess.check_call([args.cmake_binary,
-                           "--check-system-vars",
-                           "-Wno-dev",
-                           "."],
-                          cwd="__temp__",
-                          stdout=subprocess.DEVNULL)
-    subprocess.check_call([args.cmake_binary,
-                           "-E",
-                           "remove_directory",
-                           "__temp__"],
-                          stdout=subprocess.DEVNULL)
-  except Exception:
-    print("Failed to check for a compiler")
-    traceback.print_exc()
-    sys.exit(1)
+  if not args.skip_compiler:
+    print("Checking working compiler exists")
+    try:
+      subprocess.check_call([args.cmake_binary,
+                             "-E",
+                             "make_directory",
+                             "__temp__"],
+                            stdout=subprocess.DEVNULL)
+      subprocess.check_call([args.cmake_binary,
+                             "-E",
+                             "touch",
+                             "CMakeLists.txt"],
+                            cwd="__temp__",
+                            stdout=subprocess.DEVNULL)
+      subprocess.check_call([args.cmake_binary,
+                             "--check-system-vars",
+                             "-Wno-dev",
+                             "."],
+                            cwd="__temp__",
+                            stdout=subprocess.DEVNULL)
+      subprocess.check_call([args.cmake_binary,
+                             "-E",
+                             "remove_directory",
+                             "__temp__"],
+                            stdout=subprocess.DEVNULL)
+    except Exception:
+      print("Failed to check for a compiler")
+      traceback.print_exc()
+      sys.exit(1)
 
   print("All software dependencies have been installed")
 
 
-def renameProject():
-  print("Enter top level project name")
+def modifyCMakeLists():
+  name = input("Enter top level project name: ").lower().strip()
+  name = re.sub(r" ", "-", name)
 
+  targets = input("Enter target names (separate multiple by comma): test, ")
+  targets = [target.strip() for target in targets.lower().split(",")]
+  targets = list(dict.fromkeys(targets))
 
-def modifyTargets():
-  print("Enter target names")
+  with open("CMakeLists.txt", 'r') as file:
+    filedata = file.read()
+
+  # Replace top level project name
+  filedata = re.sub(r"project\(.*\)", "project(\"{}\")".format(name), filedata)
+
+  # Add targets to target list and subdirectory list
+  targetList = "set (TARGETS\n  \"test\" # Unit tester common to all projects\n"
+  subdirectories = "# Add each subdirectory\nadd_subdirectory(\"common\")\n"
+  for target in targets:
+    target = re.sub(r" ", "-", target.strip())
+    if target:
+      targetList += "  \"{}\"\n".format(target)
+      subdirectories += "add_subdirectory(\"project-{}\")\n".format(target)
+  targetList += ")"
+
+  filedata = re.sub(r"set \(TARGETS\n(.*\n)*\)", targetList, filedata)
+  filedata = re.sub(
+      r"# Add each subdirectory\n(add_subdirectory\(.*\"\)\n*)*",
+      subdirectories + "\n",
+      filedata)
+
+  # Overwrite file
+  with open("CMakeLists.txt", 'w') as file:
+    file.write(filedata)
+
+  file.close()
 
 
 def resetGit():
@@ -154,14 +185,14 @@ if __name__ == "__main__":
                       help="path to git binary")
   parser.add_argument("--keep-setup-script", action="store_true", default=False,
                       help="do not add this script to .gitignore")
+  parser.add_argument("--skip-compiler", action="store_true", default=False,
+                      help="do not check that cmake can find a compiler")
 
   argv = sys.argv[1:]
   args = parser.parse_args(argv)
 
   checkInstallations(args)
   print("----------")
-  renameProject()
-  print("----------")
-  modifyTargets()
+  modifyCMakeLists()
   print("----------")
   resetGit()

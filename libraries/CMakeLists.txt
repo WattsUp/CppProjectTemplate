@@ -8,4 +8,4 @@ endforeach()
 
 set(gtest_force_shared_crt ON CACHE BOOL "Always use msvcrt.dll" FORCE)
 add_subdirectory("googletest")
-target_include_directories("Test" SYSTEM PRIVATE "googletest/googletest/include")
+target_include_directories("test" SYSTEM PRIVATE "googletest/googletest/include")
