@@ -2,9 +2,8 @@
 *.vscode
 *.code-workspace
 
-# Automatically generated version #define file
+# Automatically generated version file
 common/Version.h
-VERSION
 
 # Build artifacts
 build
