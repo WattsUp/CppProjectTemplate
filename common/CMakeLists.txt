@@ -2,11 +2,13 @@ set (SRCS
   "Logging.cpp"
 )
 
-target_sources("fractal" PRIVATE ${SRCS})
+foreach(target ${TARGETS})
+  target_sources(${target} PRIVATE ${SRCS})
+endforeach()
 
 set (TEST_SRCS
   "TestMain.cpp"
   "Logging_Test.cpp"
 )
 
-target_sources("test" PRIVATE ${TEST_SRCS} ${SRCS})
+target_sources("test" PRIVATE ${TEST_SRCS})
