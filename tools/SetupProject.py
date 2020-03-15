@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 import argparse
 import fileinput
-import sys
+import os
+import shutil
 import subprocess
+import sys
 import traceback
 import re
 
@@ -106,10 +108,11 @@ def modifyCMakeLists():
   name = re.sub(r" ", "-", name)
 
   targets = input("Enter target names (separate multiple by comma): test, ")
-  targets = [target.strip() for target in targets.lower().split(",")]
+  targets = [re.sub(r" ", "-", target.strip())
+             for target in targets.lower().split(",")]
   targets = list(dict.fromkeys(targets))
 
-  with open("CMakeLists.txt", 'r') as file:
+  with open("CMakeLists.txt", "r", newline="\n") as file:
     filedata = file.read()
 
   # Replace top level project name
@@ -119,7 +122,6 @@ def modifyCMakeLists():
   targetList = "set (TARGETS\n  \"test\" # Unit tester common to all projects\n"
   subdirectories = "# Add each subdirectory\nadd_subdirectory(\"common\")\n"
   for target in targets:
-    target = re.sub(r" ", "-", target.strip())
     if target:
       targetList += "  \"{}\"\n".format(target)
       subdirectories += "add_subdirectory(\"project-{}\")\n".format(target)
@@ -132,10 +134,63 @@ def modifyCMakeLists():
       filedata)
 
   # Overwrite file
-  with open("CMakeLists.txt", 'w') as file:
+  with open("CMakeLists.txt", "w", newline="\n") as file:
     file.write(filedata)
 
   file.close()
+
+  print("Modified ./CMakeLists.txt")
+
+  # Remove existing project folders
+  for f in os.listdir("."):
+    if re.match(r"project-.*", f):
+      shutil.rmtree(f, ignore_errors=True)
+
+  for target in targets:
+    if target:
+      folder = "project-" + target
+      os.mkdir(folder)
+
+      data = """set(SRCS
+  "main.cpp"
+)
+
+target_sources("{}" PRIVATE ${{SRCS}})
+
+set (TEST_SRCS
+)
+
+target_sources("test" PRIVATE ${{TEST_SRCS}})
+"""
+      with open(os.path.join(folder, "CMakeLists.txt"), "w", newline="\n") as file:
+        file.write(data.format(target))
+      file.close()
+      print("Created", os.path.join(folder, "CMakeLists.txt"))
+
+      data = """#include "common/Logging.hpp"
+#include "common/Version.h"
+
+#ifdef WIN32
+int WINAPI WinMain(HINSTANCE /* hInstance */,
+                   HINSTANCE /* hPrevInstance */,
+                   char* /* args */,
+                   int /* nShowCmd */) {
+#else  /* WIN32 */
+int main(int /* argc */, char* /* argv[] */) {
+#endif /* WIN32 */
+  try {
+    common::logging::configure("log.log", true);
+  } catch (const std::exception& e) {
+    puts(e.what());
+  }
+
+  spdlog::info(VERSION_STRING_FULL);
+  return 0;
+}\n"""
+      with open(os.path.join(folder, "main.cpp"), "w", newline="\n") as file:
+        file.write(data)
+      file.close()
+      print("Created", os.path.join(folder, "main.cpp"))
 
 
 def resetGit():
