@@ -3,8 +3,10 @@ import argparse
 import fileinput
 import os
 import shutil
+import stat
 import subprocess
 import sys
+import time
 import traceback
 import re
 
@@ -193,29 +195,72 @@ int main(int /* argc */, char* /* argv[] */) {
       print("Created", os.path.join(folder, "main.cpp"))
 
 
-def resetGit():
-  # set -e
-  # rm -rf .git
-  # git init
+def removeReadOnly(func, path, excinfo):
+  os.chmod(path, stat.S_IWRITE)
+  func(path)
 
-  # git config -f .gitmodules --get-regexp "^submodule\..*\.path$" > tempfile
 
-  # while read -u 3 path_key path
-  # do
-  #     url_key=$(echo $path_key | sed "s/\.path/.url/")
-  #     url=$(git config -f .gitmodules --get "$url_key")
+def resetGit(args):
+  try:
+    shutil.rmtree(".git", onerror=removeReadOnly)
+    subprocess.check_call([args.git_binary,
+                           "init"],
+                          stdout=subprocess.DEVNULL)
+    print("Created new git repository")
 
-  #     read -p "Are you sure you want to delete $path and re-initialize as a new submodule? " yn
-  #     case $yn in
-  #         [Yy]* ) rm -rf $path; git submodule add $url $path; echo "$path has been initialized";;
-  #         [Nn]* ) exit;;
-  #         * ) echo "Please answer yes or no.";;
-  #     esac
+    submodules = subprocess.check_output([args.git_binary,
+                                          "config",
+                                          "-f",
+                                          ".gitmodules",
+                                          "--get-regexp",
+                                          "^submodule\\..*\\.path$"], universal_newlines=True)
+    for submodule in submodules.strip().split("\n"):
+      matches = re.findall(r"^(submodule\..*\.)path (.*)$", submodule)[0]
+      path = matches[1]
+      url = subprocess.check_output([args.git_binary,
+                                     "config",
+                                     "-f",
+                                     ".gitmodules",
+                                     "--get",
+                                     matches[0] + "url"], universal_newlines=True).strip()
 
-  # done 3<tempfile
+      shutil.rmtree(path, ignore_errors=True)
+      subprocess.check_call([args.git_binary,
+                             "submodule",
+                             "add",
+                             url,
+                             path])
+      print("Added {} to {}".format(url, path))
 
-  # rm tempfile
-  print("Git reset")
+    subprocess.check_call([args.git_binary,
+                           "add",
+                           "."],
+                          stdout=subprocess.DEVNULL)
+
+    print("Added all files to git staging area")
+
+    if not args.skip_commit:
+      subprocess.check_call([args.git_binary,
+                             "commit",
+                             "-m",
+                             "Initial commit"],
+                            stdout=subprocess.DEVNULL)
+
+      subprocess.check_call([args.git_binary,
+                             "tag",
+                             "-a",
+                             "v0.0.0",
+                             "-m",
+                             "Initial release"],
+                            stdout=subprocess.DEVNULL)
+
+      print("Committed and tagged v0.0.0")
+      print("Make sure to push with 'git push --tags'")
+
+  except Exception:
+    print("Failed to reset git repository")
+    traceback.print_exc()
+    sys.exit(1)
 
 
 if __name__ == "__main__":
@@ -238,10 +283,10 @@ if __name__ == "__main__":
   parser.add_argument("--git-binary", metavar="PATH",
                       default="git",
                       help="path to git binary")
-  parser.add_argument("--keep-setup-script", action="store_true", default=False,
-                      help="do not add this script to .gitignore")
   parser.add_argument("--skip-compiler", action="store_true", default=False,
                       help="do not check that cmake can find a compiler")
+  parser.add_argument("--skip-commit", action="store_true", default=False,
+                      help="do not commit the initial state to the repository")
 
   argv = sys.argv[1:]
   args = parser.parse_args(argv)
@@ -250,4 +295,4 @@ if __name__ == "__main__":
   print("----------")
   modifyCMakeLists()
   print("----------")
-  resetGit()
+  resetGit(args)
