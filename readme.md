@@ -54,7 +54,7 @@ Configure the project with default compiler and compile
 * `tools`     Helper code such as check coding conventions script
 
 ### Projects ###
-* `project-installer` installer executable which sets up directories, variables, etc.
+* `project-installer` Installer executable which sets up directories, variables, etc.
 * `project-fractal`   Application to draw a fractal to the console
 
 ## Adapting ##
@@ -70,7 +70,7 @@ Change `project("project-template")` to `project("[top-level-project-name]")` in
 ```CMake
 set (TARGETS
   "[target-name-1]" # [Optional comment]
-  "[Target name 2]" # [Optional comment]
+  "[target-name-2]" # [Optional comment]
 )
 ```
 and
