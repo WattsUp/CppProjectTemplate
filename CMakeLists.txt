@@ -99,6 +99,17 @@ foreach(target ${TARGETS})
   set_target_properties(${target} PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
 endforeach()
 
+# Add support for Mingw RC compiler
+if(WIN32)
+  enable_language(RC)
+  include(CMakeDetermineRCCompiler)
+
+  if(MINGW)
+    set(CMAKE_RC_COMPILER_INIT windres)
+    set(CMAKE_RC_COMPILE_OBJECT "<CMAKE_RC_COMPILER> <FLAGS> -O coff <DEFINES> -I${CMAKE_CURRENT_BINARY_DIR} -i <SOURCE> -o <OBJECT>")
+  endif()
+endif()
+
 # CMake targets cannot have spaces, to have spaces in the output, uncomment and adjust the following
 #set_target_properties(installer PROPERTIES OUTPUT_NAME "installer with spaces")
 
