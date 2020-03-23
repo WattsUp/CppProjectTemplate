@@ -15,7 +15,7 @@ TAB_SIZE               = 2
 #---------------------------------------------------------------------------
 # Build related configuration options
 #---------------------------------------------------------------------------
-EXTRACT_ALL            = NO
+EXTRACT_ALL            = YES
 EXTRACT_PRIVATE        = YES
 EXTRACT_PRIV_VIRTUAL   = NO
 EXTRACT_PACKAGE        = NO
@@ -51,7 +51,7 @@ FILE_PATTERNS          = *.c \
                          *.py \
                          *.pyw
 RECURSIVE              = YES
-EXCLUDE                = libraries build
+EXCLUDE                = libraries build tools
 EXCLUDE_PATTERNS       = *test*
 IMAGE_PATH             = docs/images
 USE_MDFILE_AS_MAINPAGE = readme.md
@@ -75,7 +75,9 @@ HTML_EXTRA_STYLESHEET  = docs/doxygen-style.css
 HTML_COLORSTYLE_HUE    = 220
 HTML_COLORSTYLE_SAT    = 100
 HTML_COLORSTYLE_GAMMA  = 80
+DISABLE_INDEX          = YES
 GENERATE_TREEVIEW      = YES
+SEARCHENGINE           = NO
 
 #---------------------------------------------------------------------------
 # Configuration options related to the other outputs
