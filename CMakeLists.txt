@@ -11,7 +11,7 @@ else()
     set( CMAKE_BUILD_TYPE Release CACHE STRING "Set to either \"Release\" or \"Debug\"" )
 endif()
 
-project("project-template")
+project("project-template" DESCRIPTION "A template repository for C++ projects")
 
 # Global setting: Use C++14
 set(CMAKE_CXX_STANDARD 14)
@@ -98,6 +98,22 @@ foreach(target ${TARGETS})
   target_compile_definitions(${target} PUBLIC "$<$<CONFIG:DEBUG>:DEBUG>")
   set_target_properties(${target} PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
 endforeach()
+
+# Generate doxygen when building release type builds
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+  find_package(Doxygen)
+  add_custom_target(
+    doc ALL
+    COMMAND ${CMAKE_COMMAND} -E env
+      PROJECT_NAME=${PROJECT_NAME}
+      PROJECT_VERSION=${${PROJECT_NAME}_VERSION_STRING}
+      PROJECT_DESCRIPTION=${${PROJECT_NAME}_DESCRIPTION}
+      ${DOXYGEN_EXECUTABLE} "docs/doxyfile"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMENT "Generating API documentation with Doxygen"
+    VERBATIM
+  )
+endif()
 
 # Add support for Mingw RC compiler
 if(WIN32)
