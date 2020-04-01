@@ -65,7 +65,7 @@ class Complex {
   /**
    * @brief Division operator
    * Multiplies the complex numbers together following imaginary number
-   * convention \f$(a+bi)/(c+di)=((a+bi)*(c-di))/(c^2+^2)\f$
+   * convention \f$\frac{a+bi}{c+di}=\frac{(a+bi)*(c-di)}{c^2+d^2}\f$
    *
    * @param left hand side (quotient)
    * @param right hand side (divisor)

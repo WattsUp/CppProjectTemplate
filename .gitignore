@@ -8,3 +8,4 @@ common/Version.h
 # Build artifacts
 build
 *.log
+docs/html
