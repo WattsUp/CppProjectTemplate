@@ -77,6 +77,8 @@ HTML_COLORSTYLE_SAT    = 100
 HTML_COLORSTYLE_GAMMA  = 80
 DISABLE_INDEX          = YES
 GENERATE_TREEVIEW      = YES
+USE_MATHJAX            = YES
+MATHJAX_FORMAT         = SVG
 SEARCHENGINE           = NO
 
 #---------------------------------------------------------------------------
