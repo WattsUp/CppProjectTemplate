@@ -13,7 +13,7 @@
 namespace fractal {
 
 /**
- * @brief Construct a new Fractal:: Fractal object
+ * @brief Construct a new Fractal object
  *
  */
 Fractal::Fractal() {
@@ -37,6 +37,7 @@ uint8_t Fractal::countInterations(math::Complex seed) {
   uint8_t count = 0;
   math::Complex value(0, 0);
   while (count < MAX_ITR && value.getMagnitude() < 1.0) {
+    /// Using the Mandelbrot set formula \f$z_{n+1}=z_n^2+c\f$
     value = value * value + seed;
     ++count;
   }

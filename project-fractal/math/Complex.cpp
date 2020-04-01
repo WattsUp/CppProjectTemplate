@@ -6,7 +6,7 @@ namespace fractal {
 namespace math {
 
 /**
- * @brief Construct a new Complex:: Complex object
+ * @brief Construct a new Complex object
  *
  * @param r real component
  * @param i imaginary component
