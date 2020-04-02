@@ -155,7 +155,7 @@ def findCompilationDatabase(path):
   return os.path.realpath(result)
 
 
-def main():
+def getArguments():
   parser = argparse.ArgumentParser(description='Run clang-format and/or clang-tidy against all or changed files,'
                                    ' and output which ones need fixing. Optionally, automatically fix')
   parser.add_argument('--format', action='store_true', default=False,
@@ -201,9 +201,10 @@ def main():
     parser.print_help()
     sys.exit(0)
 
-  if args.v:
-    args.quiet = False
+  return args
 
+
+def checkCalls(args):
   try:
     if args.v:
       print("Checking call git")
@@ -240,23 +241,6 @@ def main():
       traceback.print_exc()
       sys.exit(1)
 
-  files = []
-  if args.a:
-    files = getFileList(args.git_binary, re.compile(args.regex, re.IGNORECASE))
-  else:
-    files = getChangedFileList(
-        args.git_binary, re.compile(args.regex, re.IGNORECASE), args.index)
-
-  returnCode = 0
-  maxTasks = args.j
-  if maxTasks == 0:
-    maxTasks = multiprocessing.cpu_count()
-
-  database = json.load(open(os.path.join(args.p, "compile_commands.json")))
-  compileCommandFiles = [makeAbsolute(entry['file'], entry['directory'])
-                         for entry in database]
-
-  tmpdir = None
   if args.fix:
     if args.v:
       print("Checking call clang-apply-replacements")
@@ -268,82 +252,113 @@ def main():
           'Unable to run clang apply replacements. Is clang-apply-replacements binary'
           ' correctly specified?', file=sys.stderr)
       traceback.print_exc()
-      if tmpdir:
-        shutil.rmtree(tmpdir)
       sys.exit(1)
-    tmpdir = tempfile.mkdtemp()
+
+
+def tidyFiles(args, tmpdir, maxTasks, files):
+  database = json.load(open(os.path.join(args.p, "compile_commands.json")))
+  compileCommandFiles = [makeAbsolute(entry['file'], entry['directory'])
+                         for entry in database]
+
+  taskQueue = queue.Queue(maxTasks)
+  failedCommands = []
+  lock = threading.Lock()
+  for _ in range(maxTasks):
+    t = threading.Thread(target=runTidy,
+                         args=(args.clang_tidy_binary, taskQueue, lock, failedCommands,
+                               args.p, tmpdir, args.quiet, args.v))
+    t.daemon = True
+    t.start()
+
+  # Fill the queue with files.
+  for name in files:
+    if os.path.abspath(name) in compileCommandFiles:
+      taskQueue.put(name)
+
+  # Wait for all threads to be done.
+  taskQueue.join()
+  if len(failedCommands) != 0:
+    print("Failed executing commands:")
+    for cmd in failedCommands:
+      print(cmd)
+
+
+def fixTidyFiles(args, tmpdir):
+  if not args.quiet:
+    print("Applying tidy fixes...")
+
+  try:
+    cmd = [args.clang_apply_replacements_binary]
+    cmd.append("-format")
+    cmd.append("-style=file")
+    cmd.append(tmpdir)
+    subprocess.call(cmd)
+  except Exception:
+    print('Error applying fixes.\n', file=sys.stderr)
+    traceback.print_exc()
+
+
+def formatFiles(args, maxTasks, files):
+  taskQueue = queue.Queue(maxTasks)
+  failedCommands = []
+  toFormatFiles = []
+  lock = threading.Lock()
+  for _ in range(maxTasks):
+    t = threading.Thread(target=runFormat,
+                         args=(args.clang_format_binary, taskQueue, lock, failedCommands,
+                               toFormatFiles, args.fix, args.quiet, args.v))
+    t.daemon = True
+    t.start()
+
+  # Fill the queue with files.
+  for name in files:
+    taskQueue.put(name)
+
+  # Wait for all threads to be done.
+  taskQueue.join()
+  if len(failedCommands) != 0:
+    print("Failed executing commands:")
+    for cmd in failedCommands:
+      print(cmd)
+
+  if len(toFormatFiles) != 0:
+    print("Need to format:")
+    for file in toFormatFiles:
+      print(file)
+  elif not args.quiet and args.format and not args.fix:
+    print("No files need to be formatted")
+
+
+def main():
+  args = getArguments()
+
+  if args.v:
+    args.quiet = False
+
+  checkCalls(args)
+
+  files = []
+  if args.a:
+    files = getFileList(args.git_binary, re.compile(args.regex, re.IGNORECASE))
+  else:
+    files = getChangedFileList(
+        args.git_binary, re.compile(args.regex, re.IGNORECASE), args.index)
+
+  maxTasks = args.j
+  if maxTasks == 0:
+    maxTasks = multiprocessing.cpu_count()
+
+  tmpdir = tempfile.mkdtemp()
 
   try:
     if args.tidy:
-      taskQueue = queue.Queue(maxTasks)
-      failedCommands = []
-      lock = threading.Lock()
-      for _ in range(maxTasks):
-        t = threading.Thread(target=runTidy,
-                             args=(args.clang_tidy_binary, taskQueue, lock, failedCommands,
-                                   args.p, tmpdir, args.quiet, args.v))
-        t.daemon = True
-        t.start()
+      tidyFiles(args, tmpdir, maxTasks, files)
 
-      # Fill the queue with files.
-      for name in files:
-        if os.path.abspath(name) in compileCommandFiles:
-          taskQueue.put(name)
-
-      # Wait for all threads to be done.
-      taskQueue.join()
-      if len(failedCommands):
-        returnCode = 2
-        print("Failed executing commands:")
-        for cmd in failedCommands:
-          print(cmd)
-    
     if args.fix:
-      if not args.quiet:
-        print("Applying tidy fixes...")
-
-      try:
-        cmd = [args.clang_apply_replacements_binary]
-        cmd.append("-format")
-        cmd.append("-style=file")
-        cmd.append(tmpdir)
-        subprocess.call(cmd)
-      except:
-        print('Error applying fixes.\n', file=sys.stderr)
-        traceback.print_exc()
-        returnCode=1
+      fixTidyFiles(args, tmpdir)
 
     if args.format:
-      taskQueue = queue.Queue(maxTasks)
-      failedCommands = []
-      toFormatFiles = []
-      lock = threading.Lock()
-      for _ in range(maxTasks):
-        t = threading.Thread(target=runFormat,
-                             args=(args.clang_format_binary, taskQueue, lock, failedCommands,
-                                   toFormatFiles, args.fix, args.quiet, args.v))
-        t.daemon = True
-        t.start()
-
-      # Fill the queue with files.
-      for name in files:
-        taskQueue.put(name)
-
-      # Wait for all threads to be done.
-      taskQueue.join()
-      if len(failedCommands):
-        returnCode = 2
-        print("Failed executing commands:")
-        for cmd in failedCommands:
-          print(cmd)
-
-      if len(toFormatFiles):
-        returnCode = 1
-        print("Need to format:")
-        for file in toFormatFiles:
-          print(file)
-      elif not args.quiet and args.format and not args.fix:
-        print("No files need to be formatted")
+      formatFiles(args, maxTasks, files)
 
   except KeyboardInterrupt:
     print('\nCtrl-C detected, goodbye.')
@@ -353,8 +368,6 @@ def main():
 
   if tmpdir:
     shutil.rmtree(tmpdir)
-  sys.exit(returnCode)
-
 
 if __name__ == "__main__":
   main()
