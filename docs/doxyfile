@@ -69,6 +69,7 @@ SOURCE_BROWSER         = YES
 # Configuration options related to the HTML output
 #---------------------------------------------------------------------------
 GENERATE_HTML          = YES
+HTML_OUTPUT            = doxygen
 HTML_HEADER            = docs/doxygen-header.html
 HTML_FOOTER            = docs/doxygen-footer.html
 HTML_EXTRA_STYLESHEET  = docs/doxygen-style.css
