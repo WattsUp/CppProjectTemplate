@@ -20,8 +20,9 @@ Fractal::Fractal() {
   for (size_t y = 0; y < SIZE; ++y) {
     for (size_t x = 0; x < SIZE; ++x) {
       // Fractal is -VIEW_MAX to VIEW_MAX
-      math::Complex seed(x * VIEW_MAX * 2 / SIZE - VIEW_MAX,
-                         y * VIEW_MAX * 2 / SIZE - VIEW_MAX);
+      math::Complex seed(
+          static_cast<double>(x) * VIEW_MAX * 2.0 / SIZE - VIEW_MAX,
+          static_cast<double>(y) * VIEW_MAX * 2.0 / SIZE - VIEW_MAX);
       fractal.at(y).at(x) = countInterations(seed);
     }
   }
@@ -55,7 +56,7 @@ void Fractal::print() {
     for (size_t x = 0; x < SIZE; ++x) {
       // Fractal is -1.5 to 1.5
       // NOLINTNEXTLINE (bug-prone-narrowing-conversions)
-      buf.at(x) = (fractal.at(y).at(x) >> uint8_t{5}) + '0';
+      buf.at(x) = static_cast<char>((fractal.at(y).at(x) >> uint8_t{5}) + '0');
     }
     spdlog::info(buf.data());
   }
@@ -74,7 +75,7 @@ int WINAPI WinMain(HINSTANCE /* hInstance */,
                    char* /* args */,
                    int /* nShowCmd */) {
 #else  /* WIN32 */
-int main(int argc, char* argv[]) {
+int main(int /* argc */, char* /* argv */ []) {
 #endif /* WIN32 */
 
   try {
