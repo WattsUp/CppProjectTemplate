@@ -5,7 +5,7 @@ var NAVTREEINDEX0 =
 "_complex_8hpp.html":[3,0,1,0,1],
 "_complex_8hpp_source.html":[3,0,1,0,1],
 "_fractal_8cpp.html":[3,0,1,1],
-"_fractal_8cpp.html#a0ddf1224851353fc92bfbff6f499fa97":[3,0,1,1,0],
+"_fractal_8cpp.html#a81ce304348a420752ee080480d2b3095":[3,0,1,1,0],
 "_fractal_8cpp_source.html":[3,0,1,1],
 "_fractal_8hpp.html":[3,0,1,2],
 "_fractal_8hpp_source.html":[3,0,1,2],
