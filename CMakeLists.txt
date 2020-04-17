@@ -20,25 +20,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Generate compile commands for clang-tidy
 set(CMAKE_EXPORT_COMPILE_COMMANDS on)
 
-# Update semantic version from git tag
-set(GIT_EXECUTABLE "git")
-include("tools/GetVersionFromGitTag.cmake")
-# Write common/Version.h
-file(WRITE ${CMAKE_SOURCE_DIR}/common/Version.h
-  "#ifndef _COMMON_VERSION_H_\n"
-  "#define _COMMON_VERSION_H_\n\n"
-  "const constexpr char* VERSION_STRING_FULL = \"" ${${PROJECT_NAME}_VERSION_STRING_FULL} "\";\n"
-  "const constexpr char* VERSION_STRING      = \"" ${${PROJECT_NAME}_VERSION_STRING} "\";\n"
-  "const constexpr size_t VERSION_MAJOR      = " ${${PROJECT_NAME}_VERSION_MAJOR} ";\n"
-  "const constexpr size_t VERSION_MINOR      = " ${${PROJECT_NAME}_VERSION_MINOR} ";\n"
-  "const constexpr size_t VERSION_PATCH      = " ${${PROJECT_NAME}_VERSION_PATCH} ";\n"
-  "const constexpr char* VERSION_TWEAK       = \"" ${${PROJECT_NAME}_VERSION_TWEAK} "\";\n"
-  "const constexpr size_t VERSION_AHEAD      = " ${${PROJECT_NAME}_VERSION_AHEAD} ";\n"
-  "const constexpr size_t VERSION_MODIFIED   = " ${${PROJECT_NAME}_MODIFIED} ";\n"
-  "const constexpr char* VERSION_GIT_SHA     = \"" ${${PROJECT_NAME}_VERSION_GIT_SHA} "\";\n\n"
-  "#endif /* _COMMON_VERSION_H_ */\n"
-)
-
 if( WIN32 )
     # define UNICODE and_UNICODE definition on Windows
     # Both definitions are required
@@ -78,6 +59,20 @@ add_compile_options(
 # Add the suffix "d" to debug builds
 set(CMAKE_DEBUG_POSTFIX "d")
 
+# Update semantic version from git tag
+set(VERSION_FILE "${CMAKE_SOURCE_DIR}/common/Version.h")
+set(VERSION_DEPENDENCY "${VERSION_FILE}.notgenerated")
+add_custom_command(
+  OUTPUT "${VERSION_DEPENDENCY}"
+  BYPRODUCTS "${VERSION_FILE}"
+  COMMAND "${PYTHON_EXECUTABLE}"
+    "${CMAKE_SOURCE_DIR}/tools/CreateVersionFromGitTag.py"
+    --output "${VERSION_FILE}"
+    --quiet
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  COMMENT "Generating version file"
+)
+
 foreach(target ${TARGETS})
   # Create the executable target
   if(!WIN32)
@@ -94,8 +89,13 @@ foreach(target ${TARGETS})
 
   # Add the root as an include directory: i.e. #include "common/Logging.hpp" from any level
   target_include_directories(${target} PRIVATE ${CMAKE_SOURCE_DIR})
+
+  # Set debug flag when building debug release, add a suffix to output files
   target_compile_definitions(${target} PUBLIC "$<$<CONFIG:DEBUG>:DEBUG>")
   set_target_properties(${target} PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
+
+  # Make the version file a dependency so it always gets updated
+  target_sources(${target} PRIVATE "${VERSION_DEPENDENCY}")
 endforeach()
 
 # Generate doxygen when building release type builds
@@ -110,7 +110,6 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
       ${DOXYGEN_EXECUTABLE} "docs/doxyfile"
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMENT "Generating API documentation with Doxygen"
-    VERBATIM
   )
 endif()
 
