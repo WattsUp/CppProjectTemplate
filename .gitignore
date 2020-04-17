@@ -8,6 +8,7 @@ common/Version.h
 # Build artifacts
 build
 *.log
+__pycache__
 
 # Exclude the files in the bin folder except files in subfolders, i.e. runtime resources
 bin/*
