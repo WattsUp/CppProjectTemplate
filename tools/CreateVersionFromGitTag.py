@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-""" A script to fetch the latest version tag from git then append how far ahead
-the current repository is. Outputs to a version file.
-"""
+## A script to fetch the latest version tag from git then append how far ahead
+#  the current repository is. Outputs to a version file.
+
 import Template
 
 import argparse
@@ -9,8 +9,11 @@ import re
 import subprocess
 import sys
 import traceback
+from os import path
 
-
+## Check the required installations
+#  If an installation does not pass check, terminate program
+#  @param args to grab installation locations from
 def checkInstallations(args):
   if not args.quiet:
     print("Checking git version")
@@ -18,7 +21,9 @@ def checkInstallations(args):
     print("Install git version 2.17+")
     sys.exit(1)
 
-
+## Get the version information from the git tags and repository state
+#  @param git executable
+#  @return Template.Version object
 def getVersion(git):
   # Most recent tag
   cmd = [git, "describe", "--abbrev=0", "--tags"]
@@ -51,8 +56,9 @@ def getVersion(git):
 
   return Template.Version(string, ahead, modified, gitSHA)
 
-
-if __name__ == "__main__":
+## Main function
+def main():
+  # Create an arg parser menu and grab the values from the command arguments
   parser = argparse.ArgumentParser(description="Check for all software dependencies "
                                    "(prompts for their installation), modify top-level "
                                    "project name, modify targets, reset the git repository "
@@ -69,16 +75,13 @@ if __name__ == "__main__":
   args = parser.parse_args(argv)
 
   checkInstallations(args)
+
   try:
     version = getVersion(args.git_binary)
   except Exception:
     print("Exception getting version from git tags")
     traceback.print_exc()
     sys.exit(1)
-
-  modifiedInt = 0
-  if version.modified:
-    modifiedInt = 1
 
   data = f"""#ifndef _COMMON_VERSION_H_
 #define _COMMON_VERSION_H_
@@ -91,7 +94,7 @@ const constexpr size_t VERSION_MINOR      = {version.minor};
 const constexpr size_t VERSION_PATCH      = {version.patch};
 const constexpr char* VERSION_TWEAK       = "{version.tweak}";
 const constexpr size_t VERSION_AHEAD      = {version.ahead};
-const constexpr size_t VERSION_MODIFIED   = {modifiedInt};
+const constexpr size_t VERSION_MODIFIED   = {int(version.modified)};
 const constexpr char* VERSION_GIT_SHA     = "{version.gitSHA}";
 #else /* VERSION_DEFINES */
 #define VERSION_STRING_FULL "{version.fullStr()}"
@@ -101,22 +104,28 @@ const constexpr char* VERSION_GIT_SHA     = "{version.gitSHA}";
 #define VERSION_PATCH {version.patch}
 #define VERSION_TWEAK "{version.tweak}"
 #define VERSION_AHEAD {version.ahead}
-#define VERSION_MODIFIED {modifiedInt}
+#define VERSION_MODIFIED {int(version.modified)}
 #define VERSION_GIT_SHA "{version.gitSHA}"
 #endif /* VERSION_DEFINES */
 
 #endif /* _COMMON_VERSION_H_ */
 """
 
+  # Write to output file if given a path and existing file has different content
   if args.output:
-    with open(args.output, "r", newline="\n") as file:
-      if file.read() == data:
-        if not args.quiet:
-          print("Version file unchanged: ", args.output)
-        sys.exit(0)
+    if path.isfile(args.output):
+      with open(args.output, "r", newline="\n") as file:
+        if file.read() == data:
+          if not args.quiet:
+            print("Version file unchanged: ", args.output)
+          sys.exit(0)
     with open(args.output, "w", newline="\n") as file:
       file.write(data)
       if not args.quiet:
         print("Wrote version file to", args.output)
   else:
     print(data)
+
+
+if __name__ == "__main__":
+  main()

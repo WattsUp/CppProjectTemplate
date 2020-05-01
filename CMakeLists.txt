@@ -62,10 +62,11 @@ set(CMAKE_DEBUG_POSTFIX "d")
 # Update semantic version from git tag
 set(VERSION_FILE "${CMAKE_SOURCE_DIR}/common/Version.h")
 set(VERSION_DEPENDENCY "${VERSION_FILE}.notgenerated")
+find_package(Python3 COMPONENTS Interpreter)
 add_custom_command(
   OUTPUT "${VERSION_DEPENDENCY}"
   BYPRODUCTS "${VERSION_FILE}"
-  COMMAND "${PYTHON_EXECUTABLE}"
+  COMMAND "${Python3_EXECUTABLE}"
     "${CMAKE_SOURCE_DIR}/tools/CreateVersionFromGitTag.py"
     --output "${VERSION_FILE}"
     --quiet

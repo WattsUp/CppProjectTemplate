@@ -1,15 +1,14 @@
 #!/usr/bin/env python
-""" Shared functions the template tools use
-"""
-from dataclasses import dataclass
-import subprocess
-import re
+## Shared functions the template tools use
 import sys
-if sys.version_info[0] != 3 or sys.version_info[1] < 7:
-  print("This script requires Python version >=3.7")
+if sys.version_info[0] != 3 or sys.version_info[1] < 8:
+  print("This script requires Python version >=3.6")
   sys.exit(1)
 
+import subprocess
+import re
 
+## Semantic versioning object with string parsing
 class Version:
   string = ""
   major = 0
@@ -20,6 +19,12 @@ class Version:
   modified = False
   gitSHA = ""
 
+  ## Initialization of Version object
+  #  @param self object pointer
+  #  @param string of version: "[major].[minor].[patch](-tweak)"
+  #  @param ahead number of commits ahead of version string
+  #  @param modified state of the repository
+  #  @param gitSHA of current repository state
   def __init__(self, string, ahead=0, modified=False, gitSHA=""):
     self.string = string
     self.ahead = ahead
@@ -35,15 +40,25 @@ class Version:
     else:
       self.tweak = ""
 
+  ## String representation of Version
+  #  @param self object pointer
+  #  @return version string "[major].[minor].[patch](-tweak)"
   def __str__(self):
     return self.string
 
+  ## Full string representation of Version
+  #  @param self object pointer
+  #  @return full version string "[major].[minor].[patch](-tweak)+[modified][ahead].[gitSHA]"
   def fullStr(self):
     if self.modified:
       return "{}+~{}.{}".format(self.string, self.ahead, self.gitSHA)
     else:
       return "{}+{}.{}".format(self.string, self.ahead, self.gitSHA)
 
+  ## Greater than or equal to comparison
+  #  @param self object pointer
+  #  @param other object pointer
+  #  @return true if self's version is higher than other's, false otherwise
   def __ge__(self, other):
     if self.major < other.major:
       return False
@@ -53,7 +68,11 @@ class Version:
       return False
     return True
 
-
+## Run a command, read its output for semantic version, compare to a minimum
+#  @param cmd command to run, i.e. "git --version"
+#  @param minimum semantic version string to compare to
+#  @return true if outputted version is greater or equal to the minimum,
+#    false otherwise (including exception occurred whilst executing command)
 def checkSemver(cmd, minimum):
   try:
     output = subprocess.check_output(
@@ -61,7 +80,7 @@ def checkSemver(cmd, minimum):
   except BaseException:
     print(
         "Unable to run {:}. Is command correctly specified?".format(cmd[0]), file=sys.stderr)
-    sys.exit(1)
+    return False
 
   version = Version(re.sub(r".*(\d+).(\d+).(\d+).*",
                            r"\1.\2.\3", output, flags=re.S))
