@@ -1,102 +1,55 @@
 #!/usr/bin/env python
+## A script to check for all software dependencies (prompts for their
+#  installation), modify top-level project name, modify targets, reset the git
+#  repository to an initial commit, and tag the commit v0.0.0.
+
+import Template
+
 import argparse
-import fileinput
 import os
+import re
 import shutil
-import stat
 import subprocess
 import sys
-import time
 import traceback
-import re
 
-if sys.version_info[0] != 3 or sys.version_info[1] < 6:
-  print("This script requires Python version >=3.6")
-  sys.exit(1)
-
-
-def checkSemver(cmd, major, minor, patch):
-  semverRegex = r"(\d+).(\d+).(\d+)"
-
-  try:
-    output = subprocess.check_output(
-        cmd, universal_newlines=True)
-  except BaseException:
-    print(
-        "Unable to run {:}. Is command correctly specified?".format(cmd[0]), file=sys.stderr)
-    traceback.print_exc()
-    sys.exit(1)
-
-  matches = re.findall(semverRegex, output)
-  if len(matches) != 1:
-    print("Failed to get semantic version from", cmd[0], matches)
-    sys.exit(1)
-
-  if int(matches[0][0]) < major:
-    return False
-
-  if int(matches[0][1]) < minor:
-    return False
-
-  if int(matches[0][2]) < patch:
-    return False
-
-  return True
-
-
+## Check the required installations
+#  If an installation does not pass check, terminate program
+#  @param args to grab installation locations from
 def checkInstallations(args):
-
   print("Checking cmake version")
-  if not checkSemver([args.cmake_binary, "--version"], 3, 11, 0):
+  if not Template.checkSemver([args.cmake_binary, "--version"], "3.11.0"):
     print("Install cmake version 3.11+")
     sys.exit(1)
 
   print("Checking git version")
-  if not checkSemver([args.git_binary, "--version"], 2, 17, 0):
+  if not Template.checkSemver([args.git_binary, "--version"], "2.17.0"):
     print("Install git version 2.17+")
     sys.exit(1)
 
   print("Checking clang-format version")
-  if not checkSemver([args.clang_format_binary, "--version"], 7, 0, 0):
+  if not Template.checkSemver([args.clang_format_binary, "--version"], "7.0.0"):
     print("Install clang-format version 7.0+")
     sys.exit(1)
 
   print("Checking clang-tidy version")
-  if not checkSemver([args.clang_tidy_binary, "--version"], 7, 0, 0):
+  if not Template.checkSemver([args.clang_tidy_binary, "--version"], "7.0.0"):
     print("Install clang-tidy version 7.0+")
     sys.exit(1)
 
   print("Checking clang-apply-replacements version")
-  if not checkSemver(
-    [args.clang_apply_replacements_binary, "--version"], 7, 0, 0):
+  if not Template.checkSemver(
+          [args.clang_apply_replacements_binary, "--version"], "7.0.0"):
     print("Install clang-apply-replacements version 7.0+")
     sys.exit(1)
 
   if not args.skip_compiler:
     print("Checking working compiler exists")
     try:
-      subprocess.check_call([args.cmake_binary,
-                             "-E",
-                             "make_directory",
-                             "__temp__"],
-                            stdout=subprocess.DEVNULL)
-      subprocess.check_call([args.cmake_binary,
-                             "-E",
-                             "touch",
-                             "CMakeLists.txt"],
-                            cwd="__temp__",
-                            stdout=subprocess.DEVNULL)
-      subprocess.check_call([args.cmake_binary,
-                             "--check-system-vars",
-                             "-Wno-dev",
-                             "."],
-                            cwd="__temp__",
-                            stdout=subprocess.DEVNULL)
-      subprocess.check_call([args.cmake_binary,
-                             "-E",
-                             "remove_directory",
-                             "__temp__"],
-                            stdout=subprocess.DEVNULL)
+      Template.call([args.cmake_binary, "-E", "make_directory", "__temp__"])
+      Template.call([args.cmake_binary, "--check-system-vars", "-Wno-dev", "."],
+                    "__temp__")
+      Template.call([args.cmake_binary, "-E", "remove_directory", "__temp__"])
     except Exception:
       print("Failed to check for a compiler")
       traceback.print_exc()
@@ -104,7 +57,7 @@ def checkInstallations(args):
 
   print("All software dependencies have been installed")
 
-
+## Modify CMakeLists given new top level project name, and target names
 def modifyCMakeLists():
   name = input("Enter top level project name: ").lower().strip()
   name = re.sub(r" ", "-", name)
@@ -194,66 +147,38 @@ int main(int /* argc */, char* /* argv[] */) {
       file.close()
       print("Created", os.path.join(folder, "main.cpp"))
 
-
-def removeReadOnly(func, path, excinfo):
-  os.chmod(path, stat.S_IWRITE)
-  func(path)
-
-
-def resetGit(args):
+## Reset the git repository: remove current repo, initialize a new one, update
+#  submodules, commit, tag
+#  @param git executable
+#  @param commit true to commit and tag, false to skip initial commit and tag
+def resetGit(git, commit):
   try:
-    shutil.rmtree(".git", onerror=removeReadOnly)
-    subprocess.check_call([args.git_binary,
-                           "init"],
-                          stdout=subprocess.DEVNULL)
+    shutil.rmtree(".git", onerror=Template.chmodWrite)
+    Template.call([git, "init"])
     print("Created new git repository")
 
-    submodules = subprocess.check_output([args.git_binary,
-                                          "config",
-                                          "-f",
-                                          ".gitmodules",
-                                          "--get-regexp",
-                                          "^submodule\\..*\\.path$"], universal_newlines=True)
-    for submodule in submodules.strip().split("\n"):
+    # Get list of previous submodules and add them to the fresh repository
+    cmd = [git, "config", "-f", ".gitmodules",
+           "--get-regexp", "^submodule\\..*\\.path$"]
+    submodules = subprocess.check_output(cmd, universal_newlines=True).strip()
+
+    for submodule in submodules.split("\n"):
+      # Get the URL and local path of each submodule
       matches = re.findall(r"^(submodule\..*\.)path (.*)$", submodule)[0]
       path = matches[1]
-      url = subprocess.check_output([args.git_binary,
-                                     "config",
-                                     "-f",
-                                     ".gitmodules",
-                                     "--get",
-                                     matches[0] + "url"], universal_newlines=True).strip()
+      cmd = [git, "config", "-f", ".gitmodules", "--get", matches[0] + "url"]
+      url = subprocess.check_output(cmd, universal_newlines=True).strip()
 
       shutil.rmtree(path, ignore_errors=True)
-      subprocess.check_call([args.git_binary,
-                             "submodule",
-                             "add",
-                             url,
-                             path])
+      Template.call([git, "submodule", "add", url, path])
       print("Added {} to {}".format(url, path))
 
-    subprocess.check_call([args.git_binary,
-                           "add",
-                           "."],
-                          stdout=subprocess.DEVNULL)
-
+    Template.call([git, "add", "."])
     print("Added all files to git staging area")
 
-    if not args.skip_commit:
-      subprocess.check_call([args.git_binary,
-                             "commit",
-                             "-m",
-                             "Initial commit"],
-                            stdout=subprocess.DEVNULL)
-
-      subprocess.check_call([args.git_binary,
-                             "tag",
-                             "-a",
-                             "v0.0.0",
-                             "-m",
-                             "Initial release"],
-                            stdout=subprocess.DEVNULL)
-
+    if commit:
+      Template.call([git, "commit", "-m", "Initial commit"])
+      Template.call([git, "tag", "-a", "v0.0.0", "-m", "Initial release"])
       print("Committed and tagged v0.0.0")
       print("Make sure to push with 'git push --tags'")
 
@@ -262,8 +187,8 @@ def resetGit(args):
     traceback.print_exc()
     sys.exit(1)
 
-
-if __name__ == "__main__":
+## Main function
+def main():
   parser = argparse.ArgumentParser(description="Check for all software dependencies "
                                    "(prompts for their installation), modify top-level "
                                    "project name, modify targets, reset the git repository "
@@ -295,4 +220,8 @@ if __name__ == "__main__":
   print("----------")
   modifyCMakeLists()
   print("----------")
-  resetGit(args)
+  resetGit(args, not args.skip_commit)
+
+
+if __name__ == "__main__":
+  main()

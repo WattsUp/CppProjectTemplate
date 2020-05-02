@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 ## Shared functions the template tools use
 import sys
-if sys.version_info[0] != 3 or sys.version_info[1] < 8:
+if sys.version_info[0] != 3 or sys.version_info[1] < 6:
   print("This script requires Python version >=3.6")
   sys.exit(1)
 
-import subprocess
+import os
 import re
+import subprocess
+import stat
 
 ## Semantic versioning object with string parsing
 class Version:
@@ -69,7 +71,7 @@ class Version:
     return True
 
 ## Run a command, read its output for semantic version, compare to a minimum
-#  @param cmd command to run, i.e. "git --version"
+#  @param cmd command to run, i.e. ["git", "--version"]
 #  @param minimum semantic version string to compare to
 #  @return true if outputted version is greater or equal to the minimum,
 #    false otherwise (including exception occurred whilst executing command)
@@ -78,10 +80,23 @@ def checkSemver(cmd, minimum):
     output = subprocess.check_output(
         cmd, universal_newlines=True)
   except BaseException:
-    print(
-        "Unable to run {:}. Is command correctly specified?".format(cmd[0]), file=sys.stderr)
+    sys.stderr.write("Unable to run {:}. Is command correctly specified?\n".format(cmd[0]))
     return False
 
   version = Version(re.sub(r".*(\d+).(\d+).(\d+).*",
                            r"\1.\2.\3", output, flags=re.S))
   return version >= Version(minimum)
+
+## Run a command in a directory (optional), redirect stdout to DEVNULL
+#  @param cmd command to run, i.e. ["git", "--version"]
+#  @param cwd directory to run command in
+def call(cmd, cwd="."):
+  return subprocess.check_call(cmd, cwd=cwd, stdout=subprocess.DEVNULL)
+
+## Modify a path for write access, usually called on error of func
+#  @param func object pointer
+#  @param path to update permissions
+#  @param excinfo
+def chmodWrite(func, path, excinfo):
+  os.chmod(path, stat.S_IWRITE)
+  func(path)
