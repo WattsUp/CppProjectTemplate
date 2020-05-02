@@ -59,10 +59,10 @@ def getVersion(git):
 ## Main function
 def main():
   # Create an arg parser menu and grab the values from the command arguments
-  parser = argparse.ArgumentParser(description="Check for all software dependencies "
-                                   "(prompts for their installation), modify top-level "
-                                   "project name, modify targets, reset the git repository "
-                                   "to an initial commit, and tag the commit v0.0.0.")
+  parser = argparse.ArgumentParser(description="Fetch the latest version tag "
+                                   "from git then append how far ahead the "
+                                   "current repository is. Optionally outputs "
+                                   "to a version file.")
   parser.add_argument("--git-binary", metavar="PATH",
                       default="git",
                       help="path to git binary")
