@@ -80,7 +80,8 @@ def checkSemver(cmd, minimum):
     output = subprocess.check_output(
         cmd, universal_newlines=True)
   except BaseException:
-    sys.stderr.write("Unable to run {:}. Is command correctly specified?\n".format(cmd[0]))
+    sys.stderr.write(
+        "Unable to run {:}. Is command correctly specified?\n".format(cmd[0]))
     return False
 
   version = Version(re.sub(r".*(\d+).(\d+).(\d+).*",
@@ -90,6 +91,7 @@ def checkSemver(cmd, minimum):
 ## Run a command in a directory (optional), redirect stdout to DEVNULL
 #  @param cmd command to run, i.e. ["git", "--version"]
 #  @param cwd directory to run command in
+#  @return return code of the command
 def call(cmd, cwd="."):
   return subprocess.check_call(cmd, cwd=cwd, stdout=subprocess.DEVNULL)
 
@@ -100,3 +102,23 @@ def call(cmd, cwd="."):
 def chmodWrite(func, path, excinfo):
   os.chmod(path, stat.S_IWRITE)
   func(path)
+
+## Make a path absolute
+#  @param f path to check
+#  @param directory path is relative to
+#  @return absolute path of f
+def makeAbsolute(f, directory):
+  if os.path.isabs(f):
+    return os.path.abspath(f)
+  return os.path.normpath(os.path.join(directory, f))
+
+## Find the file, checks parent folders until root
+#  @param file to find
+#  @return absolute path of file
+def findInParent(file, directory):
+  while not os.path.isfile(os.path.join(directory, file)):
+    if os.path.normpath(directory) == "/":
+      print("Error: could not file:", file)
+      sys.exit(1)
+    directory += "../"
+  return makeAbsolute(file, directory)
