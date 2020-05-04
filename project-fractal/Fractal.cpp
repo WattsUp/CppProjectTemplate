@@ -75,7 +75,7 @@ int WINAPI WinMain(HINSTANCE /* hInstance */,
                    char* /* args */,
                    int /* nShowCmd */) {
 #else  /* WIN32 */
-int main(int /* argc */, char* /* argv */ []) {
+int main(int /* argc */, char* /* argv */[]) {
 #endif /* WIN32 */
 
   try {
