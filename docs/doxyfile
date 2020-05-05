@@ -6,7 +6,7 @@
 # Project related configuration options
 #---------------------------------------------------------------------------
 PROJECT_NAME           = $(PROJECT_NAME)
-PROJECT_NUMBER         = $(PROJECT_VERSION)
+@INCLUDE               = docs/version.doxyfile
 PROJECT_BRIEF          = $(PROJECT_DESCRIPTION)
 PROJECT_LOGO           = docs/logo.png
 OUTPUT_DIRECTORY       = docs

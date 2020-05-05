@@ -68,6 +68,9 @@ def main():
                       help="path to git binary")
   parser.add_argument("--output", metavar="PATH",
                       help="output file to write version info, default stdout")
+  parser.add_argument("--doxygen-output", metavar="PATH",
+                      help="output file to write version info for doxygen,"
+                      " default none")
   parser.add_argument('--quiet', action='store_true', default=False,
                       help='only output return codes and errors')
 
@@ -113,18 +116,35 @@ const constexpr char* VERSION_GIT_SHA     = "{version.gitSHA}";
 
   # Write to output file if given a path and existing file has different content
   if args.output:
+    write = True
     if path.isfile(args.output):
       with open(args.output, "r", newline="\n") as file:
-        if file.read() == data:
-          if not args.quiet:
-            print("Version file unchanged: ", args.output)
-          sys.exit(0)
-    with open(args.output, "w", newline="\n") as file:
-      file.write(data)
-      if not args.quiet:
-        print("Wrote version file to", args.output)
+        write = file.read() != data
+        if not write and not args.quiet:
+          print("Version file unchanged: ", args.output)
+    if write:
+      with open(args.output, "w", newline="\n") as file:
+        file.write(data)
+        if not args.quiet:
+          print("Wrote version file to", args.output)
   else:
     print(data)
+
+  data = f"""
+PROJECT_NUMBER         = "{version.string}"
+"""
+  if args.doxygen_output:
+    write = True
+    if path.isfile(args.doxygen_output):
+      with open(args.doxygen_output, "r", newline="\n") as file:
+        write = file.read() != data
+        if not write and not args.quiet:
+          print("Version file unchanged: ", args.doxygen_output)
+    if write:
+      with open(args.doxygen_output, "w", newline="\n") as file:
+        file.write(data)
+        if not args.quiet:
+          print("Wrote Doxygen version file to", args.doxygen_output)
 
 
 if __name__ == "__main__":
