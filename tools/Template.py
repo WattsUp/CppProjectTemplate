@@ -83,8 +83,7 @@ def checkSemver(cmd, minimum):
     sys.stderr.write(
         "Unable to run {:}. Is command correctly specified?\n".format(cmd[0]))
     return False
-
-  version = Version(re.sub(r".*(\d+).(\d+).(\d+).*",
+  version = Version(re.sub(r".*(\d+)\.(\d+)\.(\d+).*",
                            r"\1.\2.\3", output, flags=re.S))
   return version >= Version(minimum)
 
