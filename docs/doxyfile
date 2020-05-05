@@ -11,6 +11,7 @@ PROJECT_BRIEF          = $(PROJECT_DESCRIPTION)
 PROJECT_LOGO           = docs/logo.png
 OUTPUT_DIRECTORY       = docs
 TAB_SIZE               = 2
+CASE_SENSE_NAMES       = NO
 
 #---------------------------------------------------------------------------
 # Build related configuration options

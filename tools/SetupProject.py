@@ -18,8 +18,8 @@ import traceback
 #  @param args to grab installation locations from
 def checkInstallations(args):
   print("Checking cmake version")
-  if not Template.checkSemver([args.cmake_binary, "--version"], "3.11.0"):
-    print("Install cmake version 3.11+", file=sys.stderr)
+  if not Template.checkSemver([args.cmake_binary, "--version"], "3.13.0"):
+    print("Install cmake version 3.13+", file=sys.stderr)
     sys.exit(1)
 
   print("Checking git version")
@@ -227,11 +227,15 @@ def main():
                       help="do not check that cmake can find a compiler")
   parser.add_argument("--skip-commit", action="store_true", default=False,
                       help="do not commit the initial state to the repository")
+  parser.add_argument("--software-check-only", action="store_true", default=False,
+                      help="only check the installation and setup of required software")
 
   argv = sys.argv[1:]
   args = parser.parse_args(argv)
 
   checkInstallations(args)
+  if args.software_check_only:
+    return
   print("----------")
   modifyCMakeLists()
   print("----------")
