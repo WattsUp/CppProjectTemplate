@@ -13,9 +13,11 @@ int WINAPI WinMain(HINSTANCE /* hInstance */,
                    int /* nShowCmd */) {
 #else  /* WIN32 */
 int main(int argc, char* argv[]) {
-  std::string argsString = "";
-  for (int i = 0; i < argc; ++i)
-    argsString = argsString + argv[i] + " ";
+  std::string argsString;
+  for (int i = 0; i < argc; ++i) {
+    argsString += *(argv + i);
+    argsString += " ";
+  }
   const char* lpCmdLine = argsString.c_str();
 #endif /* WIN32 */
   spdlog::info("Installing with arguments: {}", lpCmdLine);
