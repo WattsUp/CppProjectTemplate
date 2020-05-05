@@ -100,7 +100,7 @@ def getArguments():
   args = parser.parse_args(argv)
 
   if not args.tidy and not args.format:
-    print("Need --tidy and/or --format flag")
+    print("Need --tidy and/or --format flag", file=sys.stderr)
     parser.print_help()
     sys.exit(1)
 
@@ -121,28 +121,28 @@ def checkInstallations(args):
   if args.v:
     print("Checking git version")
   if not Template.checkSemver([args.git_binary, "--version"], "2.17.0"):
-    print("Install git version 2.17+")
+    print("Install git version 2.17+", file=sys.stderr)
     sys.exit(1)
 
   if args.format:
     if args.v:
       print("Checking clang-format version")
     if not Template.checkSemver([args.clang_format_binary, "--version"], "7.0.0"):
-      print("Install clang-format version 7.0+")
+      print("Install clang-format version 7.0+", file=sys.stderr)
       sys.exit(1)
 
   if args.tidy:
     if args.v:
       print("Checking clang-tidy version")
     if not Template.checkSemver([args.clang_tidy_binary, "--version"], "7.0.0"):
-      print("Install clang-tidy version 7.0+")
+      print("Install clang-tidy version 7.0+", file=sys.stderr)
       sys.exit(1)
 
     if args.fix:
       if args.v:
         print("Checking clang-apply-replacements version")
       if not Template.checkSemver([args.clang_apply_replacements_binary, "--version"], "7.0.0"):
-        print("Install clang-apply-replacements version 7.0+")
+        print("Install clang-apply-replacements version 7.0+", file=sys.stderr)
         sys.exit(1)
 
 ## Thread to run clang-tidy
@@ -223,9 +223,9 @@ def tidyFiles(clangTidy, compilationDatabase, tmpdir, maxTasks, files, quiet, ve
   # Wait for all threads to be done.
   taskQueue.join()
   if len(failedCommands) != 0:
-    print("Failed executing commands:")
+    print("Failed executing commands:", file=sys.stderr)
     for cmd in failedCommands:
-      print(cmd)
+      print(cmd, file=sys.stderr)
 
 ## Apply changes exported from clang-tidy
 #  @param applyReplacements executable
@@ -315,9 +315,9 @@ def formatFiles(clangFormat, fix, quiet, verbose, maxTasks, files):
   # Wait for all threads to be done.
   taskQueue.join()
   if len(failedCommands) != 0:
-    print("Failed executing commands:")
+    print("Failed executing commands:", file=sys.stderr)
     for cmd in failedCommands:
-      print(cmd)
+      print(cmd, file=sys.stderr)
 
   if len(toFormatFiles) != 0:
     print("Need to format:")

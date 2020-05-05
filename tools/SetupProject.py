@@ -19,39 +19,51 @@ import traceback
 def checkInstallations(args):
   print("Checking cmake version")
   if not Template.checkSemver([args.cmake_binary, "--version"], "3.11.0"):
-    print("Install cmake version 3.11+")
+    print("Install cmake version 3.11+", file=sys.stderr)
     sys.exit(1)
 
   print("Checking git version")
   if not Template.checkSemver([args.git_binary, "--version"], "2.17.0"):
-    print("Install git version 2.17+")
+    print("Install git version 2.17+", file=sys.stderr)
+    sys.exit(1)
+
+  print("Checking git config")
+  try:
+    Template.call([args.git_binary, "config", "--global", "user.name"])
+    Template.call([args.git_binary, "config", "--global", "user.email"])
+  except Exception:
+    print("No identity for git", file=sys.stderr)
+    print("git config --global user.name \"Your name\"", file=sys.stderr)
+    print("git config --global user.email \"you@example.com\"", file=sys.stderr)
     sys.exit(1)
 
   print("Checking clang-format version")
   if not Template.checkSemver([args.clang_format_binary, "--version"], "7.0.0"):
-    print("Install clang-format version 7.0+")
+    print("Install clang-format version 7.0+", file=sys.stderr)
     sys.exit(1)
 
   print("Checking clang-tidy version")
   if not Template.checkSemver([args.clang_tidy_binary, "--version"], "7.0.0"):
-    print("Install clang-tidy version 7.0+")
+    print("Install clang-tidy version 7.0+", file=sys.stderr)
     sys.exit(1)
 
   print("Checking clang-apply-replacements version")
   if not Template.checkSemver(
           [args.clang_apply_replacements_binary, "--version"], "7.0.0"):
-    print("Install clang-apply-replacements version 7.0+")
+    print("Install clang-apply-replacements version 7.0+", file=sys.stderr)
     sys.exit(1)
 
   if not args.skip_compiler:
     print("Checking working compiler exists")
     try:
       Template.call([args.cmake_binary, "-E", "make_directory", "__temp__"])
+      Template.call([args.cmake_binary, "-E", "touch", "CMakeLists.txt"],
+                    "__temp__")
       Template.call([args.cmake_binary, "--check-system-vars", "-Wno-dev", "."],
                     "__temp__")
       Template.call([args.cmake_binary, "-E", "remove_directory", "__temp__"])
     except Exception:
-      print("Failed to check for a compiler")
+      print("Failed to check for a compiler", file=sys.stderr)
       traceback.print_exc()
       sys.exit(1)
 
@@ -153,7 +165,8 @@ int main(int /* argc */, char* /* argv[] */) {
 #  @param commit true to commit and tag, false to skip initial commit and tag
 def resetGit(git, commit):
   try:
-    shutil.rmtree(".git", onerror=Template.chmodWrite)
+    if os.path.exists(".git"):
+      shutil.rmtree(".git", onerror=Template.chmodWrite)
     Template.call([git, "init"])
     print("Created new git repository")
 
@@ -183,7 +196,7 @@ def resetGit(git, commit):
       print("Make sure to push with 'git push --tags'")
 
   except Exception:
-    print("Failed to reset git repository")
+    print("Failed to reset git repository", file=sys.stderr)
     traceback.print_exc()
     sys.exit(1)
 
@@ -220,7 +233,7 @@ def main():
   print("----------")
   modifyCMakeLists()
   print("----------")
-  resetGit(args, not args.skip_commit)
+  resetGit(args.git_binary, not args.skip_commit)
 
 
 if __name__ == "__main__":
