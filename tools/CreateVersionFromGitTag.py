@@ -18,7 +18,7 @@ def checkInstallations(args):
   if not args.quiet:
     print("Checking git version")
   if not Template.checkSemver([args.git_binary, "--version"], "2.17.0"):
-    print("Install git version 2.17+")
+    print("Install git version 2.17+", file=sys.stderr)
     sys.exit(1)
 
 ## Get the version information from the git tags and repository state
@@ -79,7 +79,7 @@ def main():
   try:
     version = getVersion(args.git_binary)
   except Exception:
-    print("Exception getting version from git tags")
+    print("Exception getting version from git tags", file=sys.stderr)
     traceback.print_exc()
     sys.exit(1)
 
