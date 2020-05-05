@@ -21,8 +21,8 @@ Fractal::Fractal() {
     for (size_t x = 0; x < SIZE; ++x) {
       // Fractal is -VIEW_MAX to VIEW_MAX
       math::Complex seed(
-          static_cast<double>(x) * VIEW_MAX * 2.0 / SIZE - VIEW_MAX,
-          static_cast<double>(y) * VIEW_MAX * 2.0 / SIZE - VIEW_MAX);
+          static_cast<double>(x) * VIEW_MAX * 2 / SIZE - VIEW_MAX,
+          static_cast<double>(y) * VIEW_MAX * 2 / SIZE - VIEW_MAX);
       fractal.at(y).at(x) = countInterations(seed);
     }
   }
