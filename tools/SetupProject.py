@@ -53,6 +53,11 @@ def checkInstallations(args):
     print("Install clang-apply-replacements version 7.0+", file=sys.stderr)
     sys.exit(1)
 
+  print("Checking doxygen version")
+  if not Template.checkSemver([args.doxygen_binary, "--version"], "1.8.17"):
+    print("Install doxygen version 1.8.17+", file=sys.stderr)
+    sys.exit(1)
+
   if not args.skip_compiler:
     print("Checking working compiler exists")
     try:
@@ -206,21 +211,18 @@ def main():
                                    "(prompts for their installation), modify top-level "
                                    "project name, modify targets, reset the git repository "
                                    "to an initial commit, and tag the commit v0.0.0.")
-  parser.add_argument("--cmake-binary", metavar="PATH",
-                      default="cmake",
+  parser.add_argument("--cmake-binary", metavar="PATH", default="cmake",
                       help="path to cmake binary")
-  parser.add_argument("--clang-format-binary", metavar="PATH",
-                      default="clang-format",
+  parser.add_argument("--clang-format-binary", metavar="PATH", default="clang-format",
                       help="path to clang-format binary")
-  parser.add_argument("--clang-tidy-binary", metavar="PATH",
-                      default="clang-tidy",
+  parser.add_argument("--clang-tidy-binary", metavar="PATH", default="clang-tidy",
                       help="path to clang-tidy binary")
-  parser.add_argument("--clang-apply-replacements-binary", metavar="PATH",
-                      default="clang-apply-replacements",
+  parser.add_argument("--clang-apply-replacements-binary", metavar="PATH", default="clang-apply-replacements",
                       help="path to clang-apply-replacements binary")
-  parser.add_argument("--git-binary", metavar="PATH",
-                      default="git",
+  parser.add_argument("--git-binary", metavar="PATH", default="git",
                       help="path to git binary")
+  parser.add_argument("--doxygen-binary", metavar="PATH", default="doxygen",
+                      help="path to doxygen binary")
   parser.add_argument("--skip-compiler", action="store_true", default=False,
                       help="do not check that cmake can find a compiler")
   parser.add_argument("--skip-commit", action="store_true", default=False,
