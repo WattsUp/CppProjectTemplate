@@ -4,6 +4,7 @@
 
 # Automatically generated version file
 common/Version.h
+docs/version.doxyfile
 
 # Build artifacts
 build

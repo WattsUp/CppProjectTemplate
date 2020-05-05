@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.13)
 
 # Must use GNUInstallDirs to install libraries into correct
 # locations on all platforms.
@@ -69,6 +69,7 @@ add_custom_command(
   COMMAND "${Python3_EXECUTABLE}"
     "${CMAKE_SOURCE_DIR}/tools/CreateVersionFromGitTag.py"
     --output "${VERSION_FILE}"
+    --doxygen-output "${CMAKE_SOURCE_DIR}/docs/version.doxyfile"
     --quiet
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
   COMMENT "Generating version file"
@@ -106,11 +107,11 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
     doc ALL
     COMMAND ${CMAKE_COMMAND} -E env
       PROJECT_NAME=${PROJECT_NAME}
-      PROJECT_VERSION=${${PROJECT_NAME}_VERSION_STRING}
       PROJECT_DESCRIPTION=${${PROJECT_NAME}_DESCRIPTION}
       ${DOXYGEN_EXECUTABLE} "docs/doxyfile"
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMENT "Generating API documentation with Doxygen"
+    DEPENDS "${VERSION_DEPENDENCY}"
   )
 endif()
 
