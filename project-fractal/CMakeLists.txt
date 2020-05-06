@@ -12,4 +12,12 @@ if (WIN32)
   )
 endif()
 
-target_sources("fractal" PRIVATE ${SRCS})
+set (SRCS_UNIX
+  "main_unix.cpp"
+)
+
+set (SRCS_WIN
+  "main_win.cpp"
+)
+
+target_sources("fractal" PRIVATE ${SRCS} $<IF:${WIN32}, ${SRCS_WIN}, ${SRCS_UNIX}>)
