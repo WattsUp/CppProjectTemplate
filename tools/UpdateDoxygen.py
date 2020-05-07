@@ -5,7 +5,9 @@ import Template
 import CreateVersionFromGitTag as VersionTag
 
 import argparse
+import os
 import re
+import shutil
 import subprocess
 import sys
 import traceback
@@ -29,8 +31,10 @@ def checkInstallations(args):
 ## Checks current branch is the default branch, up to date with remote,
 #  unmodified, and tagged
 #  @param git executable
+#  @param quiet true will only print errors
+#  @param version Template.Version object of the repository
 #  @return true when current branch meets criteria, false otherwise
-def checkCurrentBranchStatus(git, quiet):
+def checkCurrentBranchStatus(git, quiet, version):
   status = True
 
   # Fetch remote
@@ -57,13 +61,11 @@ def checkCurrentBranchStatus(git, quiet):
       print("Current branch is not default (origin/{})".format(default),
             file=sys.stderr)
       status = False
-
     if groups[2]:
       print("Current branch is {} of its remote".format(groups[2]),
             file=sys.stderr)
       status = False
 
-  version = VersionTag.getVersion(git)
   if version.modified:
     print("Repository is modified", file=sys.stderr)
     status = False
@@ -86,9 +88,15 @@ def main():
                       help="path to doxygen binary")
   parser.add_argument("--quiet", action="store_true", default=False,
                       help="only output return codes and errors")
+  parser.add_argument("--doxygen-output", metavar="PATH", required=True,
+                      help="output file to write project info for doxygen")
   parser.add_argument("-f", action="store_true", default=False,
                       help="ignore current branch status check: default "
                       "branch, up to date with remote, unmodified, and tagged")
+  parser.add_argument("--project-name", required=True,
+                      help="name of project to add to generated documentation")
+  parser.add_argument("--project-brief", required=True,
+                      help="brief of project to add to generated documentation")
 
   argv = sys.argv[1:]
   args = parser.parse_args(argv)
@@ -96,12 +104,34 @@ def main():
   checkInstallations(args)
 
   try:
-    if not checkCurrentBranchStatus(args.git_binary, args.quiet):
+    version = VersionTag.getVersion(args.git_binary)
+  except Exception:
+    print("Exception getting version from git tags", file=sys.stderr)
+    traceback.print_exc()
+    sys.exit(1)
+
+  try:
+    if not checkCurrentBranchStatus(args.git_binary, args.quiet, version):
       if not args.f:
         print("Current repository is not updated default branch", file=sys.stderr)
         sys.exit(1)
   except Exception:
-    print("Exception fetching remote", file=sys.stderr)
+    print("Exception checking branch status", file=sys.stderr)
+    traceback.print_exc()
+
+  data = f"""PROJECT_NAME           = "{args.project_name}"
+PROJECT_NUMBER         = "{version.string}"
+PROJECT_BRIEF          = "{args.project_brief}"
+"""
+  Template.overwriteIfChanged(args.doxygen_output, data, args.quiet)
+
+  if os.path.exists("docs/www/doxygen"):
+    shutil.rmtree("docs/www/doxygen", onerror=Template.chmodWrite)
+  try:
+    cmd = [args.doxygen_binary, "docs/doxyfile"]
+    Template.call(cmd)
+  except Exception:
+    print("Exception running doxygen", file=sys.stderr)
     traceback.print_exc()
 
 

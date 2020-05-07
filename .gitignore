@@ -4,7 +4,7 @@
 
 # Automatically generated version file
 common/Version.h
-docs/version.doxyfile
+docs/project.doxyfile
 
 # Webpage root folder
 docs/www

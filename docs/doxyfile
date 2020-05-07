@@ -5,11 +5,9 @@
 #---------------------------------------------------------------------------
 # Project related configuration options
 #---------------------------------------------------------------------------
-PROJECT_NAME           = $(PROJECT_NAME)
-@INCLUDE               = docs/version.doxyfile
-PROJECT_BRIEF          = $(PROJECT_DESCRIPTION)
+@INCLUDE               = docs/project.doxyfile
 PROJECT_LOGO           = docs/logo.png
-OUTPUT_DIRECTORY       = docs
+OUTPUT_DIRECTORY       = docs/www
 TAB_SIZE               = 2
 CASE_SENSE_NAMES       = NO
 

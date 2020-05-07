@@ -64,9 +64,6 @@ def main():
                       help="path to git binary")
   parser.add_argument("--output", metavar="PATH",
                       help="output file to write version info, default stdout")
-  parser.add_argument("--doxygen-output", metavar="PATH",
-                      help="output file to write version info for doxygen,"
-                      " default none")
   parser.add_argument("--quiet", action="store_true", default=False,
                       help="only output return codes and errors")
 
@@ -114,12 +111,6 @@ const constexpr char* VERSION_GIT_SHA     = "{version.gitSHA}";
     Template.overwriteIfChanged(args.output, data, args.quiet)
   else:
     print(data)
-
-  data = f"""
-PROJECT_NUMBER         = "{version.string}"
-"""
-  if args.doxygen_output:
-    Template.overwriteIfChanged(args.doxygen_output, data, args.quiet)
 
 
 if __name__ == "__main__":
