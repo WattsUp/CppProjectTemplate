@@ -122,18 +122,18 @@ def findInParent(file, directory):
   return makeAbsolute(file, directory)
 
 ## Write data to file if file does not exist or existing content is different
-#  @param file to write to
+#  @param path to write to
 #  @param data to write
 #  @param quiet will only print errors
-def overwriteIfChanged(file, data, quiet):
+def overwriteIfChanged(path, data, quiet):
   write = True
-  if os.path.isfile(file):
-    with open(file, "r", newline="\n") as file:
+  if os.path.isfile(path):
+    with open(path, "r", newline="\n") as file:
       write = file.read() != data
       if not write and not quiet:
-        print("File unchanged:", file)
+        print("File unchanged:", path)
   if write:
-    with open(file, "w", newline="\n") as file:
+    with open(path, "w", newline="\n") as file:
       file.write(data)
       if not quiet:
-        print("Wrote to:", file)
+        print("Wrote to:", path)
