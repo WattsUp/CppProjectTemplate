@@ -45,7 +45,7 @@ def checkCurrentBranchStatus(git, quiet):
   cmd = [git, "branch", "-vv"]
   string = subprocess.check_output(cmd, universal_newlines=True).strip()
   match = re.search(
-      r"^\* ([^\s]*) *[^\s]* *\[origin/([^\s:]*):? ?(.*)\]",
+      r"^\* ([^\s]*) *[^\s]* *\[origin/([^\s:]*):? ?((ahead|behind) .*)?\]",
       string,
       flags=re.M)
   if not match:
@@ -58,7 +58,7 @@ def checkCurrentBranchStatus(git, quiet):
             file=sys.stderr)
       status = False
 
-    if len(groups) == 3:
+    if groups[2]:
       print("Current branch is {} of its remote".format(groups[2]),
             file=sys.stderr)
       status = False
