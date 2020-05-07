@@ -114,19 +114,8 @@ const constexpr char* VERSION_GIT_SHA     = "{version.gitSHA}";
 #endif /* _COMMON_VERSION_H_ */
 """
 
-  # Write to output file if given a path and existing file has different content
   if args.output:
-    write = True
-    if path.isfile(args.output):
-      with open(args.output, "r", newline="\n") as file:
-        write = file.read() != data
-        if not write and not args.quiet:
-          print("Version file unchanged: ", args.output)
-    if write:
-      with open(args.output, "w", newline="\n") as file:
-        file.write(data)
-        if not args.quiet:
-          print("Wrote version file to", args.output)
+    Template.overwriteIfChanged(args.output, data, args.quiet)
   else:
     print(data)
 
@@ -134,17 +123,7 @@ const constexpr char* VERSION_GIT_SHA     = "{version.gitSHA}";
 PROJECT_NUMBER         = "{version.string}"
 """
   if args.doxygen_output:
-    write = True
-    if path.isfile(args.doxygen_output):
-      with open(args.doxygen_output, "r", newline="\n") as file:
-        write = file.read() != data
-        if not write and not args.quiet:
-          print("Version file unchanged: ", args.doxygen_output)
-    if write:
-      with open(args.doxygen_output, "w", newline="\n") as file:
-        file.write(data)
-        if not args.quiet:
-          print("Wrote Doxygen version file to", args.doxygen_output)
+    Template.overwriteIfChanged(args.doxygen_output, data, args.quiet)
 
 
 if __name__ == "__main__":

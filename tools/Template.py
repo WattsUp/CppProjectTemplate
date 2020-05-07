@@ -54,8 +54,7 @@ class Version:
   def fullStr(self):
     if self.modified:
       return "{}+~{}.{}".format(self.string, self.ahead, self.gitSHA)
-    else:
-      return "{}+{}.{}".format(self.string, self.ahead, self.gitSHA)
+    return "{}+{}.{}".format(self.string, self.ahead, self.gitSHA)
 
   ## Greater than or equal to comparison
   #  @param self object pointer
@@ -121,3 +120,20 @@ def findInParent(file, directory):
       sys.exit(1)
     directory += "../"
   return makeAbsolute(file, directory)
+
+## Write data to file if file does not exist or existing content is different
+#  @param file to write to
+#  @param data to write
+#  @param quiet will only print errors
+def overwriteIfChanged(file, data, quiet):
+  write = True
+  if os.path.isfile(file):
+    with open(file, "r", newline="\n") as file:
+      write = file.read() != data
+      if not write and not quiet:
+        print("File unchanged:", file)
+  if write:
+    with open(file, "w", newline="\n") as file:
+      file.write(data)
+      if not quiet:
+        print("Wrote to:", file)
