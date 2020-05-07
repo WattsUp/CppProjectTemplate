@@ -1,0 +1,10 @@
+# IDE files
+*.vscode
+*.code-workspace
+
+# Automatically generated version file
+common/Version.h
+
+# Build artifacts
+build
+*.log
