@@ -4,7 +4,13 @@
 
 # Automatically generated version file
 common/Version.h
+docs/version.doxyfile
 
 # Build artifacts
 build
 *.log
+__pycache__
+
+# Exclude the files in the bin folder except files in subfolders, i.e. runtime resources
+bin/*
+!bin/**/

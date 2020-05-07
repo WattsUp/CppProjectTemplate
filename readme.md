@@ -12,9 +12,10 @@ Includes
 ## Prerequisites ##
 * Modern C/C++ compiler
 * [git 2.17+](https://git-scm.com/downloads) installed
-* [CMake 3.11+](https://cmake.org/download/) installed
+* [CMake 3.13+](https://cmake.org/download/) installed
 * [Clang tools 7.0+](http://releases.llvm.org/download.html) namely clang-format and clang-tidy
 * [Python 3.6+](https://www.python.org/downloads/) for tools
+* [Doxygen 1.8.17+](http://www.doxygen.nl/download.html) for documentation generation
 
 **Recommended IDE** is [VSCode](https://code.visualstudio.com/) with the following extensions
 * [C/C++](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools) language support
