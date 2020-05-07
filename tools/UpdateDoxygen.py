@@ -133,6 +133,7 @@ PROJECT_BRIEF          = "{args.project_brief}"
   except Exception:
     print("Exception running doxygen", file=sys.stderr)
     traceback.print_exc()
+    sys.exit(1)
 
 
 if __name__ == "__main__":

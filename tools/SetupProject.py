@@ -38,7 +38,8 @@ def checkInstallations(args):
     sys.exit(1)
 
   print("Checking clang-format version")
-  if not Template.checkSemver([args.clang_format_binary, "--version"], "7.0.0"):
+  if not Template.checkSemver(
+    [args.clang_format_binary, "--version"], "7.0.0"):
     print("Install clang-format version 7.0+", file=sys.stderr)
     sys.exit(1)
 
@@ -167,8 +168,8 @@ int main(int /* argc */, char* /* argv[] */) {
 ## Reset the git repository: remove current repo, initialize a new one, update
 #  submodules, commit, tag
 #  @param git executable
-#  @param commit true to commit and tag, false to skip initial commit and tag
-def resetGit(git, commit):
+#  @param documentation branch to create documentation website
+def resetGit(git, documentation):
   try:
     if os.path.exists(".git"):
       shutil.rmtree(".git", onerror=Template.chmodWrite)
@@ -182,9 +183,9 @@ def resetGit(git, commit):
 
     for submodule in submodules.split("\n"):
       # Get the URL and local path of each submodule
-      matches = re.match(r"^(submodule\..*\.)path (.*)$", submodule)
-      path = matches[1]
-      cmd = [git, "config", "-f", ".gitmodules", "--get", matches[0] + "url"]
+      matches = re.search(r"^(submodule\..*\.)path (.*)$", submodule)
+      path = matches[2]
+      cmd = [git, "config", "-f", ".gitmodules", "--get", matches[1] + "url"]
       url = subprocess.check_output(cmd, universal_newlines=True).strip()
 
       shutil.rmtree(path, ignore_errors=True)
@@ -192,13 +193,36 @@ def resetGit(git, commit):
       print("Added {} to {}".format(url, path))
 
     Template.call([git, "add", "."])
-    print("Added all files to git staging area")
 
-    if commit:
-      Template.call([git, "commit", "-m", "Initial commit"])
-      Template.call([git, "tag", "-a", "v0.0.0", "-m", "Initial release"])
-      print("Committed and tagged v0.0.0")
-      print("Make sure to push with 'git push --tags'")
+    Template.call([git, "commit", "-m", "Initial commit"])
+    Template.call([git, "tag", "-a", "v0.0.0", "-m", "Initial release"])
+    print("Committed master and tagged v0.0.0, need to push to remote")
+
+    # Create orphaned documentation branch
+    Template.call([git, "checkout", "--orphan", documentation, "--quiet"])
+    Template.call([git, "reset", "."])
+
+    # Move template files to top level
+    for f in os.listdir("docs/templates/"):
+      shutil.copy(
+          Template.makeAbsolute(
+              "docs/templates/" + f,
+              os.getcwd()),
+          os.path.join(os.getcwd(), f))
+
+    # Add template files, commit
+    Template.call([git, "add",
+                   ".gitattributes", ".gitignore", ".nojekyll", "index.html"])
+    Template.call([git, "commit", "-m", "Initial commit"])
+    print("Committed documentation branch, need to push to remote")
+
+    # Remove all other files
+    Template.call([git, "clean", "-fd"])
+    if os.path.exists("docs"):
+      shutil.rmtree("docs", onerror=Template.chmodWrite)
+    Template.call([git, "checkout", "master", "--quiet"])
+
+    print("Make sure to push with 'git push --tags'")
 
   except Exception:
     print("Failed to reset git repository", file=sys.stderr)
@@ -225,10 +249,10 @@ def main():
                       help="path to doxygen binary")
   parser.add_argument("--skip-compiler", action="store_true", default=False,
                       help="do not check that cmake can find a compiler")
-  parser.add_argument("--skip-commit", action="store_true", default=False,
-                      help="do not commit the initial state to the repository")
   parser.add_argument("--software-check-only", action="store_true", default=False,
                       help="only check the installation and setup of required software")
+  parser.add_argument("--documentation-branch", default='gh-pages',
+                      help="branch to create for documentation website")
 
   argv = sys.argv[1:]
   args = parser.parse_args(argv)
@@ -239,7 +263,7 @@ def main():
   print("----------")
   modifyCMakeLists()
   print("----------")
-  resetGit(args.git_binary, not args.skip_commit)
+  resetGit(args.git_binary, args.documentation_branch)
 
 
 if __name__ == "__main__":
