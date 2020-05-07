@@ -31,7 +31,7 @@ def getVersion(git):
 
   # Number of commits since last tag
   cmd = [git, "rev-list", string + "..HEAD", "--count"]
-  ahead = subprocess.check_output(cmd, universal_newlines=True).strip()
+  ahead = int(subprocess.check_output(cmd, universal_newlines=True).strip())
 
   # Current commit SHA
   cmd = [git, "rev-parse", "--short", "HEAD"]
