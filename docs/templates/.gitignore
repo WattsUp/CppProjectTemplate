@@ -1,0 +1,6 @@
+# IDE files
+*.vscode
+*.code-workspace
+
+# Submodules from master
+libraries

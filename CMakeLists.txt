@@ -69,7 +69,6 @@ add_custom_command(
   COMMAND "${Python3_EXECUTABLE}"
     "${CMAKE_SOURCE_DIR}/tools/CreateVersionFromGitTag.py"
     --output "${VERSION_FILE}"
-    --doxygen-output "${CMAKE_SOURCE_DIR}/docs/version.doxyfile"
     --quiet
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
   COMMENT "Generating version file"
@@ -105,11 +104,13 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
   find_package(Doxygen)
   add_custom_target(
     doc ALL
-    COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_SOURCE_DIR}/docs/doxygen"
-    COMMAND ${CMAKE_COMMAND} -E env
-      PROJECT_NAME=${PROJECT_NAME}
-      PROJECT_DESCRIPTION=${${PROJECT_NAME}_DESCRIPTION}
-      ${DOXYGEN_EXECUTABLE} "${CMAKE_SOURCE_DIR}/docs/doxyfile"
+    COMMAND "${Python3_EXECUTABLE}"
+      "${CMAKE_SOURCE_DIR}/tools/UpdateDoxygen.py"
+      --doxygen-binary "${DOXYGEN_EXECUTABLE}"
+      --doxygen-output "${CMAKE_SOURCE_DIR}/docs/project.doxyfile"
+      --project-name "${PROJECT_NAME}"
+      --project-brief "${PROJECT_DESCRIPTION}"
+      --quiet
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMENT "Generating API documentation with Doxygen"
     DEPENDS "${VERSION_DEPENDENCY}"

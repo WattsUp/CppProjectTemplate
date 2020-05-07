@@ -27,18 +27,15 @@ def checkInstallations(args):
 def getVersion(git):
   # Most recent tag
   cmd = [git, "describe", "--abbrev=0", "--tags"]
-  string = subprocess.check_output(
-      cmd, universal_newlines=True).strip()
+  string = subprocess.check_output(cmd, universal_newlines=True).strip()
 
   # Number of commits since last tag
   cmd = [git, "rev-list", string + "..HEAD", "--count"]
-  ahead = subprocess.check_output(
-      cmd, universal_newlines=True).strip()
+  ahead = subprocess.check_output(cmd, universal_newlines=True).strip()
 
   # Current commit SHA
   cmd = [git, "rev-parse", "--short", "HEAD"]
-  gitSHA = subprocess.check_output(
-      cmd, universal_newlines=True).strip()
+  gitSHA = subprocess.check_output(cmd, universal_newlines=True).strip()
 
   # Check if repository contains any modifications
   modified = False
@@ -63,16 +60,12 @@ def main():
                                    "from git then append how far ahead the "
                                    "current repository is. Optionally outputs "
                                    "to a version file.")
-  parser.add_argument("--git-binary", metavar="PATH",
-                      default="git",
+  parser.add_argument("--git-binary", metavar="PATH", default="git",
                       help="path to git binary")
   parser.add_argument("--output", metavar="PATH",
                       help="output file to write version info, default stdout")
-  parser.add_argument("--doxygen-output", metavar="PATH",
-                      help="output file to write version info for doxygen,"
-                      " default none")
-  parser.add_argument('--quiet', action='store_true', default=False,
-                      help='only output return codes and errors')
+  parser.add_argument("--quiet", action="store_true", default=False,
+                      help="only output return codes and errors")
 
   argv = sys.argv[1:]
   args = parser.parse_args(argv)
@@ -118,12 +111,6 @@ const constexpr char* VERSION_GIT_SHA     = "{version.gitSHA}";
     Template.overwriteIfChanged(args.output, data, args.quiet)
   else:
     print(data)
-
-  data = f"""
-PROJECT_NUMBER         = "{version.string}"
-"""
-  if args.doxygen_output:
-    Template.overwriteIfChanged(args.doxygen_output, data, args.quiet)
 
 
 if __name__ == "__main__":
