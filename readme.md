@@ -91,3 +91,9 @@ add_subdirectory("common")
 add_subdirectory("project-installer")
 add_subdirectory("project-fractal")
 ```
+
+### Documentation branch ###
+The `docs/www` folder contains the documentation branch of this repo (`gh-pages` for GitHub). Once the repository has a remote, clone that branch into that folder and use it to build a documentation website.
+```bash
+git clone [URL] -b gh-pages docs/www
+```
