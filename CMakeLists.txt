@@ -105,11 +105,10 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
   find_package(Doxygen)
   add_custom_target(
     doc ALL
-    COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_SOURCE_DIR}/docs/doxygen"
-    COMMAND ${CMAKE_COMMAND} -E env
-      PROJECT_NAME=${PROJECT_NAME}
-      PROJECT_DESCRIPTION=${${PROJECT_NAME}_DESCRIPTION}
-      ${DOXYGEN_EXECUTABLE} "${CMAKE_SOURCE_DIR}/docs/doxyfile"
+    COMMAND "${Python3_EXECUTABLE}"
+      "${CMAKE_SOURCE_DIR}/tools/UpdateDoxygen.py"
+      --doxygen-binary "${DOXYGEN_EXECUTABLE}"
+      --quiet
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMENT "Generating API documentation with Doxygen"
     DEPENDS "${VERSION_DEPENDENCY}"
