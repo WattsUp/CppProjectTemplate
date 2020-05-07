@@ -50,6 +50,8 @@ Configure the project with default compiler and compile
 ## Folder Structure ##
 * `bin`       Binary folder, output directory for executables, add runtime resources here (icons, etc.)
 * `common`    Common code shared amongst projects: logging, utilities, etc.
+* `docs`      Documentation folder
+* `docs\www`  Documentation webpage root folder, ignored, clone of repository's gh-pages branch
 * `include`   Public include folder for libraries
 * `libraries` Third party libraries usually included as a `git submodule`
 * `tools`     Helper code such as check coding conventions script
@@ -88,4 +90,10 @@ set_target_properties([TargetNoSpaces] PROPERTIES OUTPUT_NAME "Target With Space
 add_subdirectory("common")
 add_subdirectory("project-installer")
 add_subdirectory("project-fractal")
+```
+
+### Documentation branch ###
+The `docs/www` folder contains the documentation branch of this repo (`gh-pages` for GitHub). Once the repository has a remote, clone that branch into that folder and use it to build a documentation website.
+```bash
+git clone [URL] -b gh-pages docs/www
 ```

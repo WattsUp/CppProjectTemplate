@@ -5,11 +5,9 @@
 #---------------------------------------------------------------------------
 # Project related configuration options
 #---------------------------------------------------------------------------
-PROJECT_NAME           = $(PROJECT_NAME)
-@INCLUDE               = docs/version.doxyfile
-PROJECT_BRIEF          = $(PROJECT_DESCRIPTION)
+@INCLUDE               = docs/project.doxyfile
 PROJECT_LOGO           = docs/logo.png
-OUTPUT_DIRECTORY       = docs
+OUTPUT_DIRECTORY       = docs/www
 TAB_SIZE               = 2
 CASE_SENSE_NAMES       = NO
 
@@ -27,7 +25,7 @@ EXTRACT_ANON_NSPACES   = NO
 FORCE_LOCAL_INCLUDES   = YES
 SORT_MEMBERS_CTORS_1ST = YES
 SORT_BY_SCOPE_NAME     = YES
-LAYOUT_FILE            = docs/doxygen-layout.xml
+LAYOUT_FILE            = docs/templates/doxygen-layout.xml
 
 #---------------------------------------------------------------------------
 # Configuration options related to warning and progress messages
@@ -71,9 +69,9 @@ SOURCE_BROWSER         = YES
 #---------------------------------------------------------------------------
 GENERATE_HTML          = YES
 HTML_OUTPUT            = doxygen
-HTML_HEADER            = docs/doxygen-header.html
-HTML_FOOTER            = docs/doxygen-footer.html
-HTML_EXTRA_STYLESHEET  = docs/doxygen-style.css
+HTML_HEADER            = docs/templates/doxygen-header.html
+HTML_FOOTER            = docs/templates/doxygen-footer.html
+HTML_EXTRA_STYLESHEET  = docs/templates/doxygen-style.css
 HTML_COLORSTYLE_HUE    = 220
 HTML_COLORSTYLE_SAT    = 100
 HTML_COLORSTYLE_GAMMA  = 80
