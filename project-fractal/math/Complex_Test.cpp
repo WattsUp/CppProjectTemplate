@@ -40,8 +40,8 @@ TEST_F(ComplexTest, Divide) {
 
 TEST_F(ComplexTest, DivideByZero) {
   fractal::math::Complex result = c / fractal::math::Complex{0.0, 0.0};
-  EXPECT_TRUE(isnan(result.getReal()));
-  EXPECT_TRUE(isnan(result.getImag()));
+  EXPECT_TRUE(std::isnan(result.getReal()));
+  EXPECT_TRUE(std::isnan(result.getImag()));
 }
 
 TEST_F(ComplexTest, Magnitude) {
