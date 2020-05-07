@@ -6,6 +6,9 @@
 common/Version.h
 docs/version.doxyfile
 
+# Webpage root folder
+docs/www
+
 # Build artifacts
 build
 *.log
