@@ -182,7 +182,7 @@ def resetGit(git, commit):
 
     for submodule in submodules.split("\n"):
       # Get the URL and local path of each submodule
-      matches = re.findall(r"^(submodule\..*\.)path (.*)$", submodule)[0]
+      matches = re.match(r"^(submodule\..*\.)path (.*)$", submodule)
       path = matches[1]
       cmd = [git, "config", "-f", ".gitmodules", "--get", matches[0] + "url"]
       url = subprocess.check_output(cmd, universal_newlines=True).strip()
