@@ -33,12 +33,13 @@ class Version:
     self.modified = modified
     self.gitSHA = gitSHA
 
-    versionList = re.findall(r"-.*$|[0-9]+", string)
-    self.major = versionList[0]
-    self.minor = versionList[1]
-    self.patch = versionList[2]
-    if len(versionList) == 4:
-      self.tweak = versionList[3][1:]
+    versionList = re.search(
+        r"(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-[a-zA-Z\d][-a-zA-Z.\d]*)?", string)
+    self.major = int(versionList[1])
+    self.minor = int(versionList[2])
+    self.patch = int(versionList[3])
+    if versionList[4]:
+      self.tweak = versionList[4]
     else:
       self.tweak = ""
 
@@ -82,8 +83,12 @@ def checkSemver(cmd, minimum):
     sys.stderr.write(
         "Unable to run {:}. Is command correctly specified?\n".format(cmd[0]))
     return False
-  version = Version(re.sub(r".*(\d+)\.(\d+)\.(\d+).*",
-                           r"\1.\2.\3", output, flags=re.S))
+  matches = re.search(
+      r"(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)",
+      output,
+      flags=re.S)
+  version = Version(matches.expand(r"\1.\2.\3"))
+
   return version >= Version(minimum)
 
 ## Run a command in a directory (optional), redirect stdout to DEVNULL
