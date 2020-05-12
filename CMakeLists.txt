@@ -11,7 +11,7 @@ else()
     set( CMAKE_BUILD_TYPE Release CACHE STRING "Set to either \"Release\" or \"Debug\"" )
 endif()
 
-project("project-template" DESCRIPTION "A template repository for C++ projects")
+project("project-template")
 
 # Global setting: Use C++14
 set(CMAKE_CXX_STANDARD 14)
@@ -44,9 +44,9 @@ set (TARGETS
 )
 
 set (TARGET_CONFIGS
-  "" # test
+  ""            # test
   "GUI,Archive" # fractal
-  "" # installer
+  ""            # installer
 )
 
 list(LENGTH TARGETS TARGETS_LENGTH)
@@ -91,7 +91,7 @@ foreach(INDEX RANGE ${TARGETS_LENGTH})
   if(!WIN32)
     # Looks for int main(int argc, char* argv[])
     add_executable(${TARGET})
-  elseif(${CONFIG} MATCHES "^GUI(,Archive)?$")
+  elseif(${CONFIG} MATCHES "^GUI(,?Archive)?$")
     # Looks for int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, char* args, int nShowCmd)
     add_executable(${TARGET} WIN32)
   else()
@@ -136,7 +136,7 @@ set (ARCHIVE_FILES
 foreach(INDEX RANGE ${TARGETS_LENGTH})
   list(GET TARGETS ${INDEX} TARGET)
   list(GET TARGET_CONFIGS ${INDEX} CONFIG)
-  if(${CONFIG} MATCHES "^(GUI,)?Archive$")
+  if(${CONFIG} MATCHES "^(GUI,?)?Archive$")
     string(PREPEND TARGET "${CMAKE_SOURCE_DIR}/bin/")
     if(CMAKE_BUILD_TYPE STREQUAL "Debug")
       string(APPEND TARGET ${CMAKE_DEBUG_POSTFIX})

@@ -75,25 +75,34 @@ def checkInstallations(args):
 
   print("All software dependencies have been installed")
 
+## Prompt the user to enter targets and their configurations
+#  @return list of targets (list: name string, gui boolean, archive boolean)
+def getTargets():
+  targets = []
+  more = True
+  print("---\nEnter target name: test")
+  print("Will test have a GUI? (Y/n): n")
+  print("Will test be released publicly? (Not a test utility) (Y/n): n")
+  more = input(
+      "Do you have more targets to add? (Y/n): ").lower().strip() == "y"
+  while more:
+    name = input("---\nEnter target name: ").lower().strip().replace(" ", "-")
+    gui = input("Will {} have a GUI? (Y/n): ".format(name)
+                ).lower().strip() == "y"
+    archive = input(
+        "Will {} be released publicly? (Not a test utility) (Y/n): ".format(name)).lower().strip() == "y"
+    targets.append([name, gui, archive])
+    more = input(
+        "Do you have more targets to add? (Y/n): ").lower().strip() == "y"
+  return targets
+
+
 ## Modify CMakeLists given new top level project name, and target names
 def modifyCMakeLists():
   name = input("Enter top level project name: ").lower().strip()
   name = re.sub(r" ", "-", name)
 
-  targetsRaw = input("Enter target names (separate multiple by comma, follow with"
-                     " '(GUI)' to indicate target will have a GUI): test, ")
-  targets = []
-  targetsGUI = []
-  for targetRaw in targetsRaw.lower().split(","):
-    match = re.match(r"([\w\d ]*)(\(gui\))?", targetRaw).groups()
-    target = re.sub(r" ", "-", match[0].strip())
-    if target and (target not in targets) and (target not in targetsGUI):
-      if match[1]:
-        targetsGUI.append(target)
-        print("Added GUI target \"{}\"".format(target))
-      else:
-        targets.append(target)
-        print("Added console target \"{}\"".format(target))
+  targets = getTargets()
 
   with open("CMakeLists.txt", "r", newline="\n") as file:
     filedata = file.read()
@@ -103,19 +112,24 @@ def modifyCMakeLists():
   filedata = re.sub(r"project\(.*?\)",
                     "project(\"{}\")".format(name), filedata)
   # Add targets to target list and subdirectory list
-  targetList = "set (TARGETS_RAW\n  \"test\" # Unit tester common to all projects\n"
+  targetList = "set (TARGETS\n  \"test\" # Unit tester common to all projects\n"
+  targetConfigList = "set (TARGET_CONFIGS\n  \"\" # test\n"
   subdirectories = "# Add each subdirectory\nadd_subdirectory(\"common\")\n"
   for target in targets:
-    if target:
-      targetList += "  \"{}\"\n".format(target)
-      subdirectories += "add_subdirectory(\"project-{}\")\n".format(target)
-  for target in targetsGUI:
-    if target:
-      targetList += "  \"{}(GUI)\"\n".format(target)
-      subdirectories += "add_subdirectory(\"project-{}\")\n".format(target)
+    targetList += "  \"{}\"\n".format(target[0])
+    targetConfigList += "  \""
+    if target[1]:
+      targetConfigList += "GUI"
+    if target[2]:
+      targetConfigList += "Archive"
+    targetConfigList += "\" # {}\n".format(target[0])
+    subdirectories += "add_subdirectory(\"project-{}\")\n".format(target[0])
   targetList += ")"
+  targetConfigList += ")"
 
-  filedata = re.sub(r"set \(TARGETS_RAW\n(.*\n)*?\)", targetList, filedata)
+  filedata = re.sub(r"set \(TARGETS\n(.*\n)*?\)", targetList, filedata)
+  filedata = re.sub(r"set \(TARGET_CONFIGS\n(.*\n)*?\)",
+                    targetConfigList, filedata)
   filedata = re.sub(
       r"# Add each subdirectory\n(add_subdirectory\(.*\"\)\n*)*",
       subdirectories + "\n",
@@ -134,45 +148,36 @@ def modifyCMakeLists():
       shutil.rmtree(f, ignore_errors=True)
 
   for target in targets:
-    folder = "project-" + target
+    folder = "project-" + target[0]
     os.mkdir(folder)
 
     with open("tools/templates/CMakeLists.txt", "r", newline="\n") as file:
       data = file.read()
       file.close()
-    data = re.sub(r"TARGET", target, data)
-    data = re.sub(r"  \"main_.*\.cpp\"\n", "", data)
+    data = re.sub(r"TARGET", target[0], data)
+    if target[1]:
+      data = re.sub(r"  \"main\.cpp\"\n", "", data)
+    else:
+      data = re.sub(r"  \"main_.*\.cpp\"\n", "", data)
+
     path = os.path.join(folder, "CMakeLists.txt")
     with open(path, "w", newline="\n") as file:
       file.write(data)
       file.close()
     print("Created", path)
 
-    path = os.path.join(folder, "main.cpp")
-    shutil.copy("tools/templates/main_unix.cpp", path)
-    print("Created", path)
+    if (target[1]):
+      path = os.path.join(folder, "main_unix.cpp")
+      shutil.copy("tools/templates/main_unix.cpp", path)
+      print("Created", path)
+      path = os.path.join(folder, "main_win.cpp")
+      shutil.copy("tools/templates/main_win.cpp", path)
+      print("Created", path)
+    else:
+      path = os.path.join(folder, "main.cpp")
+      shutil.copy("tools/templates/main_unix.cpp", path)
+      print("Created", path)
 
-  for target in targetsGUI:
-    folder = "project-" + target
-    os.mkdir(folder)
-
-    with open("tools/templates/CMakeLists.txt", "r", newline="\n") as file:
-      data = file.read()
-      file.close()
-    data = re.sub(r"TARGET", target, data)
-    data = re.sub(r"  \"main\.cpp\"\n", "", data)
-    path = os.path.join(folder, "CMakeLists.txt")
-    with open(path, "w", newline="\n") as file:
-      file.write(data)
-      file.close()
-    print("Created", path)
-
-    path = os.path.join(folder, "main_unix.cpp")
-    shutil.copy("tools/templates/main_unix.cpp", path)
-    print("Created", path)
-    path = os.path.join(folder, "main_win.cpp")
-    shutil.copy("tools/templates/main_win.cpp", path)
-    print("Created", path)
 
 ## Reset the git repository: remove current repo, initialize a new one, update
 #  submodules, commit, tag
