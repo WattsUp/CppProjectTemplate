@@ -11,10 +11,7 @@
 int main(int argc, char* argv[]) {
   std::string argsString;
   for (int i = 0; i < argc; ++i) {
-    argsString += *(argv + i);
-    argsString += " ";
+    spdlog::info("Installing with argument: {}", argv[i]);
   }
-  const char* lpCmdLine = argsString.c_str();
-  spdlog::info("Installing with arguments: {}", lpCmdLine);
   return 0;
 }

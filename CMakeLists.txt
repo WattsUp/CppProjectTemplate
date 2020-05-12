@@ -37,11 +37,16 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/bin")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/bin")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/bin")
 
-set (TARGETS
-  "test"      # Unit tester common to all projects
-  "fractal"   # Main executable
-  "installer" # Used to install the software onto the user's computer, setup environment, etc.
+set (TARGETS_RAW
+  "test(console)"      # Unit tester common to all projects
+  "fractal"            # Main executable
+  "installer(console)" # Used to install the software onto the user's computer, setup environment, etc.
 )
+
+foreach(TARGET_RAW ${TARGETS_RAW})
+  string(REPLACE "(console)" "" TARGET ${TARGET_RAW})
+  list(APPEND TARGETS ${TARGET})
+endforeach()
 
 # Remove existing /W0-4 flag before adding the desired one
 string(REGEX REPLACE " /W[0-4]" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
@@ -74,29 +79,30 @@ add_custom_command(
   COMMENT "Generating version file"
 )
 
-foreach(target ${TARGETS})
+foreach(TARGET ${TARGETS_RAW})
+  string(REPLACE "(console)" "" TARGET_NAME ${TARGET})
   # Create the executable target
   if(!WIN32)
     # Looks for int main(int argc, char* argv[])
-    add_executable(${target})
-  elseif(${target} STREQUAL "test")
+    add_executable(${TARGET_NAME})
+  elseif(${TARGET} MATCHES "\(console\)")
     # Looks for int main(int argc, char* argv[])
-    add_executable(${target})
-    target_compile_definitions(${target} PUBLIC WIN_CONSOLE)
+    add_executable(${TARGET_NAME})
+    target_compile_definitions(${TARGET_NAME} PUBLIC WIN_CONSOLE)
   else()
     # Looks for int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, char* args, int nShowCmd)
-    add_executable(${target} WIN32)
+    add_executable(${TARGET_NAME} WIN32)
   endif()
 
   # Add the root as an include directory: i.e. #include "common/Logging.hpp" from any level
-  target_include_directories(${target} PRIVATE ${CMAKE_SOURCE_DIR})
+  target_include_directories(${TARGET_NAME} PRIVATE ${CMAKE_SOURCE_DIR})
 
   # Set debug flag when building debug release, add a suffix to output files
-  target_compile_definitions(${target} PUBLIC "$<$<CONFIG:DEBUG>:DEBUG>")
-  set_target_properties(${target} PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
+  target_compile_definitions(${TARGET_NAME} PUBLIC "$<$<CONFIG:DEBUG>:DEBUG>")
+  set_target_properties(${TARGET_NAME} PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
 
   # Make the version file a dependency so it always gets updated
-  target_sources(${target} PRIVATE "${VERSION_DEPENDENCY}")
+  target_sources(${TARGET_NAME} PRIVATE "${VERSION_DEPENDENCY}")
 endforeach()
 
 # Generate doxygen when building release type builds
