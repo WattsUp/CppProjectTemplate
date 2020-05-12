@@ -37,16 +37,20 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/bin")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/bin")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/bin")
 
-set (TARGETS_RAW
-  "test"         # Unit tester common to all projects
-  "fractal(GUI)" # Main executable
-  "installer"    # Used to install the software onto the user's computer, setup environment, etc.
+set (TARGETS
+  "test"      # Unit tester common to all projects
+  "fractal"   # Main executable
+  "installer" # Used to install the software onto the user's computer, setup environment, etc.
 )
 
-foreach(TARGET_RAW ${TARGETS_RAW})
-  string(REPLACE "(GUI)" "" TARGET ${TARGET_RAW})
-  list(APPEND TARGETS ${TARGET})
-endforeach()
+set (TARGET_CONFIGS
+  "" # test
+  "GUI,Archive" # fractal
+  "" # installer
+)
+
+list(LENGTH TARGETS TARGETS_LENGTH)
+math(EXPR TARGETS_LENGTH "${TARGETS_LENGTH} - 1")
 
 # Remove existing /W0-4 flag before adding the desired one
 string(REGEX REPLACE " /W[0-4]" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
@@ -79,30 +83,32 @@ add_custom_command(
   COMMENT "Generating version file"
 )
 
-foreach(TARGET ${TARGETS_RAW})
-  string(REPLACE "(GUI)" "" TARGET_NAME ${TARGET})
+foreach(INDEX RANGE ${TARGETS_LENGTH})
+  list(GET TARGETS ${INDEX} TARGET)
+  list(GET TARGET_CONFIGS ${INDEX} CONFIG)
+
   # Create the executable target
   if(!WIN32)
     # Looks for int main(int argc, char* argv[])
-    add_executable(${TARGET_NAME})
-  elseif(${TARGET} MATCHES "\(GUI\)")
+    add_executable(${TARGET})
+  elseif(${CONFIG} MATCHES "^GUI(,Archive)?$")
     # Looks for int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, char* args, int nShowCmd)
-    add_executable(${TARGET_NAME} WIN32)
+    add_executable(${TARGET} WIN32)
   else()
     # Looks for int main(int argc, char* argv[])
-    add_executable(${TARGET_NAME})
-    target_compile_definitions(${TARGET_NAME} PUBLIC WIN_CONSOLE)
+    add_executable(${TARGET})
+    target_compile_definitions(${TARGET} PUBLIC WIN_CONSOLE)
   endif()
 
   # Add the root as an include directory: i.e. #include "common/Logging.hpp" from any level
-  target_include_directories(${TARGET_NAME} PRIVATE ${CMAKE_SOURCE_DIR})
+  target_include_directories(${TARGET} PRIVATE ${CMAKE_SOURCE_DIR})
 
   # Set debug flag when building debug release, add a suffix to output files
-  target_compile_definitions(${TARGET_NAME} PUBLIC "$<$<CONFIG:DEBUG>:DEBUG>")
-  set_target_properties(${TARGET_NAME} PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
+  target_compile_definitions(${TARGET} PUBLIC "$<$<CONFIG:DEBUG>:DEBUG>")
+  set_target_properties(${TARGET} PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
 
   # Make the version file a dependency so it always gets updated
-  target_sources(${TARGET_NAME} PRIVATE "${VERSION_DEPENDENCY}")
+  target_sources(${TARGET} PRIVATE "${VERSION_DEPENDENCY}")
 endforeach()
 
 # Generate doxygen when building release type builds
@@ -120,6 +126,50 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMENT "Generating API documentation with Doxygen"
     DEPENDS "${VERSION_DEPENDENCY}"
+  )
+endif()
+
+# Create an archive of the output files, ready to distribute
+set (ARCHIVE_FILES
+  "${CMAKE_SOURCE_DIR}/bin/include"
+)
+foreach(INDEX RANGE ${TARGETS_LENGTH})
+  list(GET TARGETS ${INDEX} TARGET)
+  list(GET TARGET_CONFIGS ${INDEX} CONFIG)
+  if(${CONFIG} MATCHES "^(GUI,)?Archive$")
+    string(PREPEND TARGET "${CMAKE_SOURCE_DIR}/bin/")
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+      string(APPEND TARGET ${CMAKE_DEBUG_POSTFIX})
+    endif()
+    if(WIN32)
+      string(APPEND TARGET ".exe")
+    endif()
+    list(APPEND ARCHIVE_FILES ${TARGET})
+  endif()
+endforeach()
+
+set (ARCHIVE_OUTPUT "${CMAKE_SOURCE_DIR}/bin/archive")
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+  string(APPEND ARCHIVE_OUTPUT ${CMAKE_DEBUG_POSTFIX})
+endif()
+
+if(WIN32)
+  add_custom_target(
+    archive
+    COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${ARCHIVE_OUTPUT}.zip" --format=zip
+      ${ARCHIVE_FILES}
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/bin"
+    COMMENT "Generating archive of output files"
+    DEPENDS ${ARCHIVE_FILES}
+  )
+else()
+  add_custom_target(
+    archive
+    COMMAND ${CMAKE_COMMAND} -E tar "cfvz" "${ARCHIVE_OUTPUT}.tar.gz"
+      ${ARCHIVE_FILES}
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/bin"
+    COMMENT "Generating archive of output files"
+    DEPENDS ${ARCHIVE_FILES}
   )
 endif()
 
