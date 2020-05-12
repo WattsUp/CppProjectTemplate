@@ -38,13 +38,13 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/bin")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/bin")
 
 set (TARGETS_RAW
-  "test(console)"      # Unit tester common to all projects
-  "fractal"            # Main executable
-  "installer(console)" # Used to install the software onto the user's computer, setup environment, etc.
+  "test"         # Unit tester common to all projects
+  "fractal(GUI)" # Main executable
+  "installer"    # Used to install the software onto the user's computer, setup environment, etc.
 )
 
 foreach(TARGET_RAW ${TARGETS_RAW})
-  string(REPLACE "(console)" "" TARGET ${TARGET_RAW})
+  string(REPLACE "(GUI)" "" TARGET ${TARGET_RAW})
   list(APPEND TARGETS ${TARGET})
 endforeach()
 
@@ -80,18 +80,18 @@ add_custom_command(
 )
 
 foreach(TARGET ${TARGETS_RAW})
-  string(REPLACE "(console)" "" TARGET_NAME ${TARGET})
+  string(REPLACE "(GUI)" "" TARGET_NAME ${TARGET})
   # Create the executable target
   if(!WIN32)
     # Looks for int main(int argc, char* argv[])
     add_executable(${TARGET_NAME})
-  elseif(${TARGET} MATCHES "\(console\)")
+  elseif(${TARGET} MATCHES "\(GUI\)")
+    # Looks for int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, char* args, int nShowCmd)
+    add_executable(${TARGET_NAME} WIN32)
+  else()
     # Looks for int main(int argc, char* argv[])
     add_executable(${TARGET_NAME})
     target_compile_definitions(${TARGET_NAME} PUBLIC WIN_CONSOLE)
-  else()
-    # Looks for int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, char* args, int nShowCmd)
-    add_executable(${TARGET_NAME} WIN32)
   endif()
 
   # Add the root as an include directory: i.e. #include "common/Logging.hpp" from any level
