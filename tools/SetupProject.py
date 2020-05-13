@@ -80,13 +80,13 @@ def checkInstallations(args):
 def getTargets():
   targets = []
   more = True
-  print("---\nEnter target name: test")
+  print("----\nEnter target name: test")
   print("Will test have a GUI? (Y/n): n")
   print("Will test be released publicly? (Not a test utility) (Y/n): n")
   more = input(
       "Do you have more targets to add? (Y/n): ").lower().strip() == "y"
   while more:
-    name = input("---\nEnter target name: ").lower().strip().replace(" ", "-")
+    name = input("----\nEnter target name: ").lower().strip().replace(" ", "-")
     gui = input("Will {} have a GUI? (Y/n): ".format(name)
                 ).lower().strip() == "y"
     archive = input(
@@ -195,9 +195,11 @@ def resetGit(git, documentation):
            "--get-regexp", "^submodule\\..*\\.path$"]
     submodules = subprocess.check_output(cmd, universal_newlines=True).strip()
 
-    for f in os.listdir("libraries"):
-      if os.path.isdir(join("libraries", f)):
-        shutil.rmtree(os.path.join("libraries", f), ignore_errors=True)
+    shutil.rmtree("libraries", ignore_errors=True)
+    os.mkdir("libraries")
+    path = "libraries/CMakeLists.txt"
+    shutil.copy("tools/templates/CMakeListsLibraries.txt", path)
+    print("Created", path)
 
     for submodule in submodules.split("\n"):
       # Get the URL and local path of each submodule
@@ -206,7 +208,6 @@ def resetGit(git, documentation):
       cmd = [git, "config", "-f", ".gitmodules", "--get", matches[1] + "url"]
       url = subprocess.check_output(cmd, universal_newlines=True).strip()
 
-      shutil.rmtree(path, ignore_errors=True)
       Template.call([git, "submodule", "add", url, path])
       print("Added {} to {}".format(url, path))
 
@@ -214,7 +215,7 @@ def resetGit(git, documentation):
 
     Template.call([git, "commit", "-m", "Initial commit"])
     Template.call([git, "tag", "-a", "v0.0.0", "-m", "Initial release"])
-    print("Committed master and tagged v0.0.0, need to push to remote")
+    print("----\nCommitted master and tagged v0.0.0, need to push to remote")
 
     # Create orphaned documentation branch
     Template.call([git, "checkout", "--orphan", documentation, "--quiet"])
