@@ -5,10 +5,10 @@ namespace installer {
 
 /**
  * @brief Perform installation process
- * 
+ *
  */
 void install();
 
-}
+}  // namespace installer
 
 #endif /* _INSTALLER_INSTALLER_H_ */
