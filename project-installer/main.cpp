@@ -1,6 +1,8 @@
 #include "common/Logging.hpp"
 #include "common/Version.h"
 
+#include "Installer.h"
+
 #include <cstdio>
 #include <exception>
 
@@ -27,5 +29,8 @@ int main(int argc, char* argv[]) {
     // Catch exceptions from spdlog
     puts(e.what());
   }
+
+  installer::install();
+
   return 0;
 }

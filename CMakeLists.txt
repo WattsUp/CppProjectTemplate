@@ -21,9 +21,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS on)
 
 if( WIN32 )
-    # define UNICODE and_UNICODE definition on Windows
-    # Both definitions are required
-    add_definitions(-DUNICODE -D_UNICODE)
+  # define UNICODE and_UNICODE definition on Windows
+  # Both definitions are required
+  add_definitions(-DUNICODE -D_UNICODE)
 endif()
 
 # Allow target_sources to use relative paths

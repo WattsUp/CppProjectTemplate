@@ -6,16 +6,24 @@ set (SRCS_UNIX
 )
 
 set (SRCS_WIN
+  "Installer_win32.cpp"
 )
 
 if (WIN32)
-  file(WRITE "archive.rc" "#ifndef ARCHIVE\n"
-    "#define ARCHIVE 1\n"
+  file(WRITE "archive.rc" "#include \"Resources.h\"\n"
+    "\n"
+    "#ifndef RES_ARCHIVE\n"
+    "#define RES_ARCHIVE 1\n"
     "#endif\n"
-    "ARCHIVE RCDATA ${ARCHIVE_OUTPUT}.zip")
-  list(APPEND SRCS "archive.rc")
-  set_property(SOURCE "Fractal_win32.rc" APPEND PROPERTY OBJECT_DEPENDS
+    "RES_ARCHIVE RCDATA ${ARCHIVE_OUTPUT}.zip")
+  list(APPEND SRCS "archive.rc" "installer_win32.rc")
+  set_property(SOURCE "archive.rc" APPEND PROPERTY OBJECT_DEPENDS
     "${ARCHIVE_OUTPUT}.zip"
+    "Resources.h"
+  )
+  set_property(SOURCE "installer_win32.rc" APPEND PROPERTY OBJECT_DEPENDS
+    "installer.ico"
+    "${CMAKE_SOURCE_DIR}/common/Version.h"
   )
 endif()
 

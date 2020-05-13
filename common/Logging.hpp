@@ -1,6 +1,7 @@
 #ifndef _COMMON_LOGGING_H_
 #define _COMMON_LOGGING_H_
 
+#define SPDLOG_WCHAR_TO_UTF8_SUPPORT
 #include <spdlog/spdlog.h>
 
 namespace common {
