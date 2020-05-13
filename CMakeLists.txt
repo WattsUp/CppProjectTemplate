@@ -11,7 +11,7 @@ else()
     set( CMAKE_BUILD_TYPE Release CACHE STRING "Set to either \"Release\" or \"Debug\"" )
 endif()
 
-project("project-template")
+project("project-template" DESCRIPTION "A template repository for C++ projects")
 
 # Global setting: Use C++14
 set(CMAKE_CXX_STANDARD 14)
@@ -115,7 +115,7 @@ endforeach()
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
   find_package(Doxygen)
   add_custom_target(
-    doc ALL
+    "doc" ALL
     COMMAND "${Python3_EXECUTABLE}"
       "${CMAKE_SOURCE_DIR}/tools/UpdateDoxygen.py"
       --doxygen-binary "${DOXYGEN_EXECUTABLE}"
@@ -155,7 +155,7 @@ endif()
 
 if(WIN32)
   add_custom_target(
-    archive
+    "archive"
     COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${ARCHIVE_OUTPUT}.zip" --format=zip
       ${ARCHIVE_FILES}
     WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/bin"
@@ -164,7 +164,7 @@ if(WIN32)
   )
 else()
   add_custom_target(
-    archive
+    "archive"
     COMMAND ${CMAKE_COMMAND} -E tar "cfvz" "${ARCHIVE_OUTPUT}.tar.gz"
       ${ARCHIVE_FILES}
     WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/bin"
