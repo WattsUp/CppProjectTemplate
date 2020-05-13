@@ -7,7 +7,6 @@ set (SRCS_UNIX
 
 set (SRCS_WIN
   "Installer_win32.cpp"
-  "miniz.c"
 )
 
 if (WIN32)

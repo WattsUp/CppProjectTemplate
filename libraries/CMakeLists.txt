@@ -1,5 +1,6 @@
 set ( LIBRARY_INCLUDES
   "spdlog/include"
+  "miniz"
 )
 
 foreach(target ${TARGETS})
@@ -9,3 +10,5 @@ endforeach()
 set(gtest_force_shared_crt ON CACHE BOOL "Always use msvcrt.dll" FORCE)
 add_subdirectory("googletest")
 target_include_directories("test" SYSTEM PRIVATE "googletest/googletest/include")
+
+target_sources("installer" PRIVATE "miniz/miniz.c")

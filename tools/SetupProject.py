@@ -195,6 +195,10 @@ def resetGit(git, documentation):
            "--get-regexp", "^submodule\\..*\\.path$"]
     submodules = subprocess.check_output(cmd, universal_newlines=True).strip()
 
+    for f in os.listdir("libraries"):
+      if os.path.isdir(join("libraries", f)):
+        shutil.rmtree(os.path.join("libraries", f), ignore_errors=True)
+
     for submodule in submodules.split("\n"):
       # Get the URL and local path of each submodule
       matches = re.search(r"^(submodule\..*\.)path (.*)$", submodule)
