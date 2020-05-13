@@ -22,7 +22,7 @@ bool extractArchive(char* path) {
   size_t size  = ::SizeofResource(NULL, res);
 
   spdlog::info("Extracting archive to {}", path);
-  if (_mkdir(path)) {
+  if (_mkdir(path) && errno != EEXIST) {
     spdlog::error("Failed to make directory {}: {}", path, errno);
     return false;
   }
@@ -48,7 +48,7 @@ bool extractArchive(char* path) {
 
     if (mz_zip_reader_is_file_a_directory(&zip, i)) {
       std::string filePath = std::string{path} + "/" + stat.m_filename;
-      if (_mkdir(filePath.c_str())) {
+      if (_mkdir(filePath.c_str()) && errno != EEXIST) {
         spdlog::error("Failed to make directory {}: {}", path, errno);
         return false;
       }

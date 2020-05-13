@@ -115,7 +115,7 @@ endforeach()
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
   find_package(Doxygen)
   add_custom_target(
-    "doc" ALL
+    "doc"
     COMMAND "${Python3_EXECUTABLE}"
       "${CMAKE_SOURCE_DIR}/tools/UpdateDoxygen.py"
       --doxygen-binary "${DOXYGEN_EXECUTABLE}"
