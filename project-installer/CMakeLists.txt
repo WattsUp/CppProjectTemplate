@@ -7,6 +7,7 @@ set (SRCS_UNIX
 
 set (SRCS_WIN
   "Installer_win32.cpp"
+  "miniz.c"
 )
 
 if (WIN32)
@@ -28,7 +29,3 @@ if (WIN32)
 endif()
 
 target_sources("installer" PRIVATE ${SRCS} $<IF:$<BOOL:${WIN32}>, ${SRCS_WIN}, ${SRCS_UNIX}>)
-
-
-# # Add archive as a resource for self-extraction
-# add_dependencies("installer" "archive")

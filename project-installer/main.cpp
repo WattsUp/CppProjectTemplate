@@ -17,6 +17,7 @@ int main(int argc, char* argv[]) {
   try {
 #if DEBUG
     spdlog::info(VERSION_STRING_FULL);
+    spdlog::set_level(spdlog::level::debug);
 #else  /* DEBUG */
     spdlog::info(VERSION_STRING);
 #endif /* DEBUG */
