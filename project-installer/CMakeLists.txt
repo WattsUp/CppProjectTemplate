@@ -10,21 +10,13 @@ set (SRCS_WIN
 )
 
 if (WIN32)
-  file(WRITE "archive.rc" "#include \"Resources.h\"\n"
-    "\n"
-    "#ifndef RES_ARCHIVE\n"
-    "#define RES_ARCHIVE 1\n"
-    "#endif\n"
-    "RES_ARCHIVE RCDATA ${ARCHIVE_OUTPUT}.zip")
-  list(APPEND SRCS "archive.rc" "installer_win32.rc")
-  set_property(SOURCE "archive.rc" APPEND PROPERTY OBJECT_DEPENDS
-    "${ARCHIVE_OUTPUT}.zip"
+  list(APPEND SRCS "Installer_win32.rc")
+  set_property(SOURCE "Installer_win32.rc" APPEND PROPERTY OBJECT_DEPENDS
+    "Installer.ico"
+    "${CMAKE_SOURCE_DIR}/common/Version.h"
     "Resources.h"
   )
-  set_property(SOURCE "installer_win32.rc" APPEND PROPERTY OBJECT_DEPENDS
-    "installer.ico"
-    "${CMAKE_SOURCE_DIR}/common/Version.h"
-  )
+  add_dependencies("installer" "archive")
 endif()
 
 target_sources("installer" PRIVATE ${SRCS} $<IF:$<BOOL:${WIN32}>, ${SRCS_WIN}, ${SRCS_UNIX}>)

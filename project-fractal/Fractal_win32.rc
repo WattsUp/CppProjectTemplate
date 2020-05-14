@@ -14,7 +14,7 @@
 #define COPYRIGHT ""
 
 #define EXE "fractal.exe"
-#define ICO "fractal.ico"
+#define ICO "Fractal.ico"
 
 IDI_ICON1 ICON DISCARDABLE ICO
 
