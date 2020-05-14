@@ -39,17 +39,9 @@ def getVersion(git):
 
   # Check if repository contains any modifications
   modified = False
-  cmd = [git, "diff-index", "--quiet", "--cached", "HEAD"]
-  if subprocess.call(cmd):
+  cmd = [git, "status", "-s"]
+  if subprocess.check_output(cmd, universal_newlines=True).strip():
     modified = True
-  else:
-    cmd = [git, "diff-files", "--quiet"]
-    if subprocess.call(cmd):
-      modified = True
-    else:
-      cmd = [git, "ls-files", "--others", "--exclude-standard"]
-      if subprocess.check_output(cmd, universal_newlines=True).strip():
-        modified = True
 
   return Template.Version(string, ahead, modified, gitSHA)
 
