@@ -13,68 +13,6 @@ import subprocess
 import sys
 import traceback
 
-## Check the required installations
-#  If an installation does not pass check, terminate program
-#  @param args to grab installation locations from
-def checkInstallations(args):
-  print("Checking cmake version")
-  if not Template.checkSemver([args.cmake_binary, "--version"], "3.13.0"):
-    print("Install cmake version 3.13+", file=sys.stderr)
-    sys.exit(1)
-
-  print("Checking git version")
-  if not Template.checkSemver([args.git_binary, "--version"], "2.17.0"):
-    print("Install git version 2.17+", file=sys.stderr)
-    sys.exit(1)
-
-  print("Checking git config")
-  try:
-    Template.call([args.git_binary, "config", "--global", "user.name"])
-    Template.call([args.git_binary, "config", "--global", "user.email"])
-  except Exception:
-    print("No identity for git", file=sys.stderr)
-    print("git config --global user.name \"Your name\"", file=sys.stderr)
-    print("git config --global user.email \"you@example.com\"", file=sys.stderr)
-    sys.exit(1)
-
-  print("Checking clang-format version")
-  if not Template.checkSemver(
-          [args.clang_format_binary, "--version"], "7.0.0"):
-    print("Install clang-format version 7.0+", file=sys.stderr)
-    sys.exit(1)
-
-  print("Checking clang-tidy version")
-  if not Template.checkSemver([args.clang_tidy_binary, "--version"], "7.0.0"):
-    print("Install clang-tidy version 7.0+", file=sys.stderr)
-    sys.exit(1)
-
-  print("Checking clang-apply-replacements version")
-  if not Template.checkSemver(
-          [args.clang_apply_replacements_binary, "--version"], "7.0.0"):
-    print("Install clang-apply-replacements version 7.0+", file=sys.stderr)
-    sys.exit(1)
-
-  print("Checking doxygen version")
-  if not Template.checkSemver([args.doxygen_binary, "--version"], "1.8.17"):
-    print("Install doxygen version 1.8.17+", file=sys.stderr)
-    sys.exit(1)
-
-  if not args.skip_compiler:
-    print("Checking working compiler exists")
-    try:
-      Template.call([args.cmake_binary, "-E", "make_directory", "__temp__"])
-      Template.call([args.cmake_binary, "-E", "touch", "CMakeLists.txt"],
-                    "__temp__")
-      Template.call([args.cmake_binary, "--check-system-vars", "-Wno-dev", "."],
-                    "__temp__")
-      Template.call([args.cmake_binary, "-E", "remove_directory", "__temp__"])
-    except Exception:
-      print("Failed to check for a compiler", file=sys.stderr)
-      traceback.print_exc()
-      sys.exit(1)
-
-  print("All software dependencies have been installed")
-
 ## Prompt the user to enter targets and their configurations
 #  @return list of targets (list: name string, gui boolean, archive boolean)
 def getTargets():
@@ -254,17 +192,17 @@ def main():
                                    "(prompts for their installation), modify top-level "
                                    "project name, modify targets, reset the git repository "
                                    "to an initial commit, and tag the commit v0.0.0.")
-  parser.add_argument("--cmake-binary", metavar="PATH", default="cmake",
+  parser.add_argument("--cmake", metavar="PATH", default="cmake",
                       help="path to cmake binary")
-  parser.add_argument("--clang-format-binary", metavar="PATH", default="clang-format",
+  parser.add_argument("--clang-format", metavar="PATH", default="clang-format",
                       help="path to clang-format binary")
-  parser.add_argument("--clang-tidy-binary", metavar="PATH", default="clang-tidy",
+  parser.add_argument("--clang-tidy", metavar="PATH", default="clang-tidy",
                       help="path to clang-tidy binary")
-  parser.add_argument("--clang-apply-replacements-binary", metavar="PATH", default="clang-apply-replacements",
+  parser.add_argument("--clang-apply-replacements", metavar="PATH", default="clang-apply-replacements",
                       help="path to clang-apply-replacements binary")
-  parser.add_argument("--git-binary", metavar="PATH", default="git",
+  parser.add_argument("--git", metavar="PATH", default="git",
                       help="path to git binary")
-  parser.add_argument("--doxygen-binary", metavar="PATH", default="doxygen",
+  parser.add_argument("--doxygen", metavar="PATH", default="doxygen",
                       help="path to doxygen binary")
   parser.add_argument("--skip-compiler", action="store_true", default=False,
                       help="do not check that cmake can find a compiler")
@@ -276,13 +214,23 @@ def main():
   argv = sys.argv[1:]
   args = parser.parse_args(argv)
 
-  checkInstallations(args)
+  Template.checkInstallations(
+      args.git,
+      True,
+      args.clang_format,
+      args.clang_tidy,
+      args.clang_apply_replacements,
+      args.doxygen,
+      args.cmake,
+      not args.skip_compiler,
+      False)
+  print("All software dependencies have been installed")
   if args.software_check_only:
     return
   print("----------")
   modifyCMakeLists()
   print("----------")
-  resetGit(args.git_binary, args.documentation_branch)
+  resetGit(args.git, args.documentation_branch)
 
 
 if __name__ == "__main__":

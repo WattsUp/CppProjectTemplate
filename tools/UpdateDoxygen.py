@@ -12,22 +12,6 @@ import subprocess
 import sys
 import traceback
 
-## Check the required installations
-#  If an installation does not pass check, terminate program
-#  @param args to grab installation locations from
-def checkInstallations(args):
-  if not args.quiet:
-    print("Checking git version")
-  if not Template.checkSemver([args.git_binary, "--version"], "2.17.0"):
-    print("Install git version 2.17+", file=sys.stderr)
-    sys.exit(1)
-
-  if not args.quiet:
-    print("Checking doxygen version")
-  if not Template.checkSemver([args.doxygen_binary, "--version"], "1.8.17"):
-    print("Install doxygen version 1.8.17+", file=sys.stderr)
-    sys.exit(1)
-
 ## Checks current branch is the default branch, up to date with remote,
 #  unmodified, and tagged
 #  @param git executable
@@ -82,9 +66,9 @@ def main():
   # Create an arg parser menu and grab the values from the command arguments
   parser = argparse.ArgumentParser(description="Update the webpage folder with"
                                    " doxygen generated documentation")
-  parser.add_argument("--git-binary", metavar="PATH", default="git",
+  parser.add_argument("--git", metavar="PATH", default="git",
                       help="path to git binary")
-  parser.add_argument("--doxygen-binary", metavar="PATH", default="doxygen",
+  parser.add_argument("--doxygen", metavar="PATH", default="doxygen",
                       help="path to doxygen binary")
   parser.add_argument("--quiet", action="store_true", default=False,
                       help="only output return codes and errors")
@@ -101,17 +85,20 @@ def main():
   argv = sys.argv[1:]
   args = parser.parse_args(argv)
 
-  checkInstallations(args)
+  Template.checkInstallations(
+      git=args.git,
+      doxygen=args.doxygen,
+      quiet=args.quiet)
 
   try:
-    version = VersionTag.getVersion(args.git_binary)
+    version = VersionTag.getVersion(args.git)
   except Exception:
     print("Exception getting version from git tags", file=sys.stderr)
     traceback.print_exc()
     sys.exit(1)
 
   try:
-    if not checkCurrentBranchStatus(args.git_binary, args.quiet, version):
+    if not checkCurrentBranchStatus(args.git, args.quiet, version):
       if not args.f:
         print("Current repository is not updated default branch", file=sys.stderr)
         sys.exit(1)
@@ -128,7 +115,7 @@ PROJECT_BRIEF          = "{args.project_brief}"
   if os.path.exists("docs/www/doxygen"):
     shutil.rmtree("docs/www/doxygen", onerror=Template.chmodWrite)
   try:
-    cmd = [args.doxygen_binary, "docs/doxyfile"]
+    cmd = [args.doxygen, "docs/doxyfile"]
     Template.call(cmd)
   except Exception:
     print("Exception running doxygen", file=sys.stderr)

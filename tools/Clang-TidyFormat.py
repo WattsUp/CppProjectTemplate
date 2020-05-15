@@ -88,13 +88,13 @@ def getArguments():
                       help="check clang-format")
   parser.add_argument("--tidy", action="store_true", default=False,
                       help="check clang-tidy")
-  parser.add_argument("--clang-format-binary", metavar="PATH", default="clang-format",
+  parser.add_argument("--clang-format", metavar="PATH", default="clang-format",
                       help="path to clang-format binary")
-  parser.add_argument("--clang-tidy-binary", metavar="PATH", default="clang-tidy",
+  parser.add_argument("--clang-tidy", metavar="PATH", default="clang-tidy",
                       help="path to clang-tidy binary")
-  parser.add_argument("--clang-apply-replacements-binary", metavar="PATH", default="clang-apply-replacements",
+  parser.add_argument("--clang-apply-replacements", metavar="PATH", default="clang-apply-replacements",
                       help="path to clang-apply-replacements binary")
-  parser.add_argument("--git-binary", metavar="PATH", default="git",
+  parser.add_argument("--git", metavar="PATH", default="git",
                       help="path to git binary")
   parser.add_argument("--regex", metavar="PATTERN", default=r"^((?!test).)*\.(cpp|cc|c\+\+|cxx|c|h|hpp)$",
                       help="custom pattern selecting file paths to check "
@@ -129,43 +129,14 @@ def getArguments():
   if args.v:
     args.quiet = False
 
-  checkInstallations(args)
+  Template.checkInstallations(
+      git=args.git,
+      clangFormat=args.clang_format,
+      clangTidy=args.clang_tidy,
+      clangApplyReplacements=args.clang_apply_replacements,
+      quiet=args.quiet)
 
   return args
-
-## Check the required installations
-#  If an installation does not pass check, terminate program
-#  @param args to grab installation locations from
-def checkInstallations(args):
-  if args.v:
-    print("Checking git version")
-  if not Template.checkSemver([args.git_binary, "--version"], "2.17.0"):
-    print("Install git version 2.17+", file=sys.stderr)
-    sys.exit(1)
-
-  if args.format:
-    if args.v:
-      print("Checking clang-format version")
-    if not Template.checkSemver(
-      [args.clang_format_binary, "--version"], "7.0.0"):
-      print("Install clang-format version 7.0+", file=sys.stderr)
-      sys.exit(1)
-
-  if args.tidy:
-    if args.v:
-      print("Checking clang-tidy version")
-    if not Template.checkSemver(
-      [args.clang_tidy_binary, "--version"], "7.0.0"):
-      print("Install clang-tidy version 7.0+", file=sys.stderr)
-      sys.exit(1)
-
-    if args.fix:
-      if args.v:
-        print("Checking clang-apply-replacements version")
-      if not Template.checkSemver(
-        [args.clang_apply_replacements_binary, "--version"], "7.0.0"):
-        print("Install clang-apply-replacements version 7.0+", file=sys.stderr)
-        sys.exit(1)
 
 ## Thread to run clang-tidy
 #  @param clangTidy executable
@@ -368,10 +339,14 @@ def main():
 
   files = []
   if args.a:
-    files = getFileList(args.git_binary, re.compile(args.regex, re.IGNORECASE))
+    files = getFileList(args.git, re.compile(args.regex, re.IGNORECASE))
   else:
     files = getChangedFileList(
-        args.git_binary, re.compile(args.regex, re.IGNORECASE), args.staged)
+        args.git,
+        re.compile(
+            args.regex,
+            re.IGNORECASE),
+        args.staged)
 
   tmpdir = None
   if args.tidy and args.fix:
@@ -381,15 +356,15 @@ def main():
 
   try:
     if args.tidy:
-      if not tidyFiles(args.clang_tidy_binary, args.p, tmpdir,
+      if not tidyFiles(args.clang_tidy, args.p, tmpdir,
                        args.j, files, args.quiet, args.v):
         exitCode = 1
 
     if tmpdir:
-      fixTidyFiles(args.clang_apply_replacements_binary, tmpdir, args.quiet)
+      fixTidyFiles(args.clang_apply_replacements, tmpdir, args.quiet)
 
     if args.format:
-      if not formatFiles(args.clang_format_binary, args.fix,
+      if not formatFiles(args.clang_format, args.fix,
                          args.quiet, args.v, args.j, files):
         exitCode = 1
 
