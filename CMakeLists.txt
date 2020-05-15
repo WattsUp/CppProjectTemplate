@@ -223,3 +223,16 @@ foreach(TARGET ${TARGETS})
   endif()
 endforeach()
 
+if(NOT WIN32)
+  set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A template repository for C++ projects")
+  set(CPACK_PACKAGE_VENDOR "Bradley Davis")
+  set(CPACK_PACKAGE_CONTACT "Bradley Davis me@bradleydavis.tech")
+  set(CPACK_PACKAGE_VERSION_MAJOR "0")
+  set(CPACK_PACKAGE_VERSION_MINOR "1")
+  set(CPACK_PACKAGE_VERSION_PATCH "1")
+
+  set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "any")
+  set(CPACK_DEBIAN_PACKAGE_DEPENDS "")
+
+  include(CPack)
+endif()
