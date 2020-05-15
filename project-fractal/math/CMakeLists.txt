@@ -1,12 +1,12 @@
 
 set (SRCS
-  "Complex.cpp"
+  "complex.cpp"
 )
 
 target_sources("fractal" PRIVATE ${SRCS})
 
 set (TEST_SRCS
-  "Complex_Test.cpp"
+  "complex_test.cpp"
 )
 
 target_sources("test" PRIVATE ${TEST_SRCS} ${SRCS})

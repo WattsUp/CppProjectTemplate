@@ -1,5 +1,5 @@
-#include "common/Logging.hpp"
-#include "common/Version.h"
+#include "common/logging.hpp"
+#include "common/version.h"
 
 #include <Windows.h>
 

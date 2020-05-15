@@ -37,39 +37,44 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/bin")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/bin")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/bin")
 
-set (TARGETS
-  "test"      # Unit tester common to all projects
-  "fractal"   # Main executable
-  "installer" # Used to install the software onto the user's computer, setup environment, etc.
+# Targets not included in the public distributable
+set (TARGETS_NODIST
+  "test"          # Unit tester common to all projects
+  "installer-win" # Windows self-extracting installer
 )
 
-set (TARGET_CONFIGS
-  ""            # test
-  "GUI,Archive" # fractal
-  ""            # installer
+set (TARGETS_NODISTCONFIG
+  "default" # test
+  "default" # installer-win
 )
 
-list(LENGTH TARGETS TARGETS_LENGTH)
+# Targets included in the public distributable
+set (TARGETS_DIST
+  "fractal"       # Main executable
+)
+
+set (TARGETS_DISTCONFIG
+  "WinMain" # fractal
+)
+
+list(APPEND TARGETS ${TARGETS_NODIST})
+list(APPEND TARGETS ${TARGETS_DIST})
+list(APPEND TARGETS_CONFIG ${TARGETS_NODISTCONFIG})
+list(APPEND TARGETS_CONFIG ${TARGETS_DISTCONFIG})
+
+list(LENGTH TARGETS_CONFIG TARGETS_LENGTH)
 math(EXPR TARGETS_LENGTH "${TARGETS_LENGTH} - 1")
 
 # Remove existing /W0-4 flag before adding the desired one
 string(REGEX REPLACE " /W[0-4]" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
 string(REGEX REPLACE " /W[0-4]" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
-# Set compiler options for warnings (treat as errors)
-add_compile_options(
-  $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Werror>
-  $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wall>
-  $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wextra>
-  $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wconversion>
-  $<$<CXX_COMPILER_ID:MSVC>:/WX>
-  $<$<CXX_COMPILER_ID:MSVC>:/W4>)
-
 # Add the suffix "d" to debug builds
 set(CMAKE_DEBUG_POSTFIX "d")
 
 # Update semantic version from git tag
-set(VERSION_FILE "${CMAKE_SOURCE_DIR}/common/Version.h")
+# Script executed every time to check for changes
+set(VERSION_FILE "${CMAKE_SOURCE_DIR}/common/version.h")
 set(VERSION_DEPENDENCY "${VERSION_FILE}.notgenerated")
 find_package(Python3 COMPONENTS Interpreter)
 add_custom_command(
@@ -85,22 +90,23 @@ add_custom_command(
 
 foreach(INDEX RANGE ${TARGETS_LENGTH})
   list(GET TARGETS ${INDEX} TARGET)
-  list(GET TARGET_CONFIGS ${INDEX} CONFIG)
+  list(GET TARGETS_CONFIG ${INDEX} CONFIG)
 
-  # Create the executable target
-  if(!WIN32)
-    # Looks for int main(int argc, char* argv[])
-    add_executable(${TARGET})
-  elseif(${CONFIG} MATCHES "^GUI(,?Archive)?$")
+  if (${CONFIG} MATCHES "^WinMain$" AND WIN32)
     # Looks for int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, char* args, int nShowCmd)
     add_executable(${TARGET} WIN32)
-  else()
+  elseif(NOT ${TARGET} MATCHES "^.*-win$")
     # Looks for int main(int argc, char* argv[])
     add_executable(${TARGET})
-    target_compile_definitions(${TARGET} PUBLIC WIN_CONSOLE)
+    if (WIN32)
+      target_compile_definitions(${TARGET} PRIVATE WIN_CONSOLE)
+    endif()
+  else()
+    message("Windows only, excluding from all: ${TARGET}")
+    add_executable(${TARGET} EXCLUDE_FROM_ALL)
   endif()
 
-  # Add the root as an include directory: i.e. #include "common/Logging.hpp" from any level
+  # Add the root as an include directory: i.e. #include "common/logging.hpp" from any level
   target_include_directories(${TARGET} PRIVATE ${CMAKE_SOURCE_DIR})
 
   # Set debug flag when building debug release, add a suffix to output files
@@ -109,6 +115,15 @@ foreach(INDEX RANGE ${TARGETS_LENGTH})
 
   # Make the version file a dependency so it always gets updated
   target_sources(${TARGET} PRIVATE "${VERSION_DEPENDENCY}")
+
+  # Set compiler options for warnings (treat as errors)
+  target_compile_options(${TARGET} PRIVATE
+    $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Werror>
+    $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wall>
+    $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wextra>
+    $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wconversion>
+    $<$<CXX_COMPILER_ID:MSVC>:/WX>
+    $<$<CXX_COMPILER_ID:MSVC>:/W4>)
 endforeach()
 
 # Generate doxygen when building release type builds
@@ -133,19 +148,15 @@ endif()
 set (ARCHIVE_FILES
   "${CMAKE_SOURCE_DIR}/bin/include"
 )
-foreach(INDEX RANGE ${TARGETS_LENGTH})
-  list(GET TARGETS ${INDEX} TARGET)
-  list(GET TARGET_CONFIGS ${INDEX} CONFIG)
-  if(${CONFIG} MATCHES "^(GUI,?)?Archive$")
-    string(PREPEND TARGET "${CMAKE_SOURCE_DIR}/bin/")
-    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-      string(APPEND TARGET ${CMAKE_DEBUG_POSTFIX})
-    endif()
-    if(WIN32)
-      string(APPEND TARGET ".exe")
-    endif()
-    list(APPEND ARCHIVE_FILES ${TARGET})
+foreach(TARGET ${TARGETS_DIST})
+  string(PREPEND TARGET "${CMAKE_SOURCE_DIR}/bin/")
+  if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    string(APPEND TARGET ${CMAKE_DEBUG_POSTFIX})
   endif()
+  if(WIN32)
+    string(APPEND TARGET ".exe")
+  endif()
+  list(APPEND ARCHIVE_FILES ${TARGET})
 endforeach()
 
 set (ARCHIVE_OUTPUT "${CMAKE_SOURCE_DIR}/bin/archive")
@@ -184,8 +195,8 @@ if(WIN32)
   endif()
 endif()
 
-# CMake targets cannot have spaces, to have spaces in the output, uncomment and adjust the following
-#set_target_properties(installer PROPERTIES OUTPUT_NAME "installer with spaces")
+# CMake targets cannot have spaces, to have spaces in the output use the OUTPUT_NAME property
+set_target_properties("installer-win" PROPERTIES OUTPUT_NAME "${PROJECT_NAME}-installer")
 
 # Add libraries first to setup library include directives
 add_subdirectory("libraries")
@@ -195,7 +206,8 @@ include_directories("include")
 
 # Add each subdirectory
 add_subdirectory("common")
+add_subdirectory("installer-win")
+
 add_subdirectory("project-fractal")
-add_subdirectory("project-installer")
 
 target_link_libraries("test" gtest)
