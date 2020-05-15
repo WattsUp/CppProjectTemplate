@@ -18,3 +18,4 @@ temp
 # Exclude the files in the bin folder except files in subfolders, i.e. runtime resources
 bin/*
 !bin/**/
+!bin/CMakeLists.txt

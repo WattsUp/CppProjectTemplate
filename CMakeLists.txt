@@ -149,14 +149,7 @@ set (ARCHIVE_FILES
   "${CMAKE_SOURCE_DIR}/bin/include"
 )
 foreach(TARGET ${TARGETS_DIST})
-  string(PREPEND TARGET "${CMAKE_SOURCE_DIR}/bin/")
-  if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    string(APPEND TARGET ${CMAKE_DEBUG_POSTFIX})
-  endif()
-  if(WIN32)
-    string(APPEND TARGET ".exe")
-  endif()
-  list(APPEND ARCHIVE_FILES ${TARGET})
+  list(APPEND ARCHIVE_FILES $<TARGET_FILE:${TARGET}>)
 endforeach()
 
 set (ARCHIVE_OUTPUT "${CMAKE_SOURCE_DIR}/bin/archive")
@@ -207,7 +200,26 @@ include_directories("include")
 # Add each subdirectory
 add_subdirectory("common")
 add_subdirectory("installer-win")
+add_subdirectory("bin")
 
 add_subdirectory("project-fractal")
 
 target_link_libraries("test" gtest)
+
+foreach(TARGET ${TARGETS})
+  get_target_property(EXCLUDED ${TARGET} EXCLUDE_FROM_ALL)
+  if (${EXCLUDED} STREQUAL "EXCLUDED-NOTFOUND")
+    if (WIN32)
+      install(TARGETS ${TARGET}
+              RUNTIME DESTINATION .
+              LIBRARY DESTINATION lib
+              ARCHIVE DESTINATION .)
+    else()
+      install(TARGETS ${TARGET}
+              RUNTIME DESTINATION bin
+              LIBRARY DESTINATION lib
+              ARCHIVE DESTINATION lib/static)
+    endif()
+  endif()
+endforeach()
+
