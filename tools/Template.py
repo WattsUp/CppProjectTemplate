@@ -231,30 +231,30 @@ def checkInstallations(git=None, gitConfig=False, clangFormat=None, clangTidy=No
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(
       description="Check for all software dependencies")
-  parser.add_argument("--cmake-binary", metavar="PATH", default="cmake",
+  parser.add_argument("--cmake", metavar="PATH", default="cmake",
                       help="path to cmake binary")
-  parser.add_argument("--clang-format-binary", metavar="PATH", default="clang-format",
+  parser.add_argument("--clang-format", metavar="PATH", default="clang-format",
                       help="path to clang-format binary")
-  parser.add_argument("--clang-tidy-binary", metavar="PATH", default="clang-tidy",
+  parser.add_argument("--clang-tidy", metavar="PATH", default="clang-tidy",
                       help="path to clang-tidy binary")
-  parser.add_argument("--clang-apply-replacements-binary", metavar="PATH", default="clang-apply-replacements",
+  parser.add_argument("--clang-apply-replacements", metavar="PATH", default="clang-apply-replacements",
                       help="path to clang-apply-replacements binary")
-  parser.add_argument("--git-binary", metavar="PATH", default="git",
+  parser.add_argument("--git", metavar="PATH", default="git",
                       help="path to git binary")
-  parser.add_argument("--doxygen-binary", metavar="PATH", default="doxygen",
+  parser.add_argument("--doxygen", metavar="PATH", default="doxygen",
                       help="path to doxygen binary")
 
   argv = sys.argv[1:]
   args = parser.parse_args(argv)
 
   checkInstallations(
-      args.git_binary,
+      args.git,
       True,
-      args.clang_format_binary,
-      args.clang_tidy_binary,
-      args.clang_apply_replacements_binary,
-      args.doxygen_binary,
-      args.cmake_binary,
+      args.clang_format,
+      args.clang_tidy,
+      args.clang_apply_replacements,
+      args.doxygen,
+      args.cmake,
       True,
       False)
   print("All software dependencies have been installed")

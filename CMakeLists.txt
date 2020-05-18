@@ -133,7 +133,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
     "doc"
     COMMAND "${Python3_EXECUTABLE}"
       "${CMAKE_SOURCE_DIR}/tools/UpdateDoxygen.py"
-      --doxygen-binary "${DOXYGEN_EXECUTABLE}"
+      --doxygen "${DOXYGEN_EXECUTABLE}"
       --doxygen-output "${CMAKE_SOURCE_DIR}/docs/project.doxyfile"
       --project-name "${PROJECT_NAME}"
       --project-brief "${PROJECT_DESCRIPTION}"
