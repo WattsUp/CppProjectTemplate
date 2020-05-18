@@ -7,6 +7,7 @@ if sys.version_info[0] != 3 or sys.version_info[1] < 6:
 
 import argparse
 import os
+import pickle
 import re
 import subprocess
 import stat
@@ -144,6 +145,39 @@ def overwriteIfChanged(path, data, quiet):
       file.write(data)
       if not quiet:
         print("Wrote to:", path)
+
+## Class to track the progress of a procedure between runs of the script
+class Progress:
+  ## Initialize a progress object
+  #  @param self object pointer
+  #  @param step of current progress
+  #  @param path to save progress object to
+  def __init__(self, step=0, path='progress.pkl'):
+    self.step = step
+    self.path = makeAbsolute(path, os.getcwd())
+    self.attachment = None
+
+  ## Open progress from save file
+  #  @param self object pointer
+  #  @return Progress object loaded from save if path exists
+  def open(self):
+    if os.path.exists(self.path):
+      with open(self.path, 'rb') as file:
+        return pickle.load(file)
+    return self
+
+  ## Increment progress and save progress to file
+  #  @param self object pointer
+  def increment(self):
+    self.step += 1
+    with open(self.path, 'wb') as file:
+      pickle.dump(self, file, pickle.HIGHEST_PROTOCOL)
+
+  ## Complete the procedure by deleting the progress save file
+  #  @param self object pointer
+  def complete(self):
+    if os.path.exists(self.path):
+      os.remove(self.path)
 
 ## Check the required installations
 #  If an installation does not pass check, terminate program

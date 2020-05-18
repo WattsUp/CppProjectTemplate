@@ -15,4 +15,4 @@ target_sources("TARGET" PRIVATE ${SRCS} $<IF:$<BOOL:${WIN32}>, ${SRCS_WIN}, ${SR
 set (TEST_SRCS
 )
 
-target_sources("test" PRIVATE ${{TEST_SRCS}})
+target_sources("test" PRIVATE ${TEST_SRCS})

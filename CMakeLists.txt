@@ -202,6 +202,7 @@ add_subdirectory("common")
 add_subdirectory("installer-win")
 add_subdirectory("bin")
 
+# Add each target subdirectory
 add_subdirectory("project-fractal")
 
 target_link_libraries("test" gtest)

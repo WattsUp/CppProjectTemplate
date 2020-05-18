@@ -4,3 +4,10 @@
 
 # Submodules from master
 libraries
+
+# Build artifacts
+build
+*.log
+__pycache__
+temp
+*.pkl
