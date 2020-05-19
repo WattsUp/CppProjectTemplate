@@ -6,6 +6,7 @@ Checks: '-*,
         google-*,
         -google-readability-braces-around-statements,
         modernize-*,
+        -modernize-use-trailing-return-type,
         performance-*,
         portability-*,
         readability-*'
