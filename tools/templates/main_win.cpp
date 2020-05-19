@@ -1,5 +1,3 @@
-#include "fractal.hpp"
-
 #include "common/logging.hpp"
 #include "common/version.h"
 
@@ -11,23 +9,24 @@
 /**
  * @brief Main entry point for program
  *
+ * @param lpCmdLine command line string
  * @return int zero on success, non-zero on failure
  */
 int WINAPI WinMain(HINSTANCE /* hInstance */,
                    HINSTANCE /* hPrevInstance */,
-                   char* /* args */,
+                   char* lpCmdline,
                    int /* nShowCmd */) {
   try {
     common::logging::configure("log.log", true);
   } catch (const std::exception& e) {
     puts(e.what());
   }
-
+#if DEBUG
+  spdlog::info(VERSION_STRING_FULL);
+#else  /* DEBUG */
   spdlog::info(VERSION_STRING);
+#endif /* DEBUG */
 
-  fractal::Fractal fractal;
-  fractal.print();
-  std::this_thread::sleep_for(std::chrono::seconds(2));
-
+  spdlog::info("Argument: {}", lpCmdline);
   return 0;
 }

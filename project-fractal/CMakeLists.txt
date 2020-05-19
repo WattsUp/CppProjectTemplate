@@ -1,14 +1,14 @@
 add_subdirectory(math)
 
 set (SRCS
-  "Fractal.cpp"
+  "fractal.cpp"
 )
 
 if (WIN32)
-  list(APPEND SRCS "Fractal_win32.rc")
-  set_property(SOURCE "Fractal_win32.rc" APPEND PROPERTY OBJECT_DEPENDS
+  list(APPEND SRCS "fractal_win32.rc")
+  set_property(SOURCE "fractal_win32.rc" APPEND PROPERTY OBJECT_DEPENDS
     "fractal.ico"
-    "${CMAKE_SOURCE_DIR}/common/Version.h"
+    "${CMAKE_SOURCE_DIR}/common/version.h"
   )
 endif()
 

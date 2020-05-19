@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "Version.h"
+#include "version.h"
 
 int main(int argc, char* argv[]) {
   ::testing::InitGoogleTest(&argc, argv);

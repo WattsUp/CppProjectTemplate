@@ -3,7 +3,7 @@
 *.code-workspace
 
 # Automatically generated version file
-common/Version.h
+common/version.h
 docs/project.doxyfile
 
 # Webpage root folder
@@ -13,7 +13,10 @@ docs/www
 build
 *.log
 __pycache__
+temp
+*.pkl
 
 # Exclude the files in the bin folder except files in subfolders, i.e. runtime resources
 bin/*
 !bin/**/
+!bin/CMakeLists.txt

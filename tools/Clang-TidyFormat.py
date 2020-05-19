@@ -38,25 +38,44 @@ def getFileList(git, pattern):
 #  regex pattern
 #  @param git executable
 #  @param pattern regex to match file name to
-#  @param indexOnly true will only check files added to the index (git add FILE)
+#  @param stagedOnly true will only check files added to the stage (git add FILE)
 #  @return list of absolute file paths to process
-def getChangedFileList(git, pattern, indexOnly):
+def getChangedFileList(git, pattern, stagedOnly):
   files = []
   cmd = [git, "diff-index", "--cached", "--name-only", "HEAD"]
   result = subprocess.check_output(cmd, universal_newlines=True).strip()
   for filename in result.split("\n"):
     filename = Template.makeAbsolute(filename, os.getcwd())
-    if re.match(pattern, filename) and filename not in files:
+    if re.match(pattern, filename) and filename not in files and os.path.exists(
+      filename):
       files.append(filename)
 
-  if(indexOnly):
+  if(stagedOnly):
+    # # Check if each file in the repository is the version that is being
+    # # committed
+    # diffFiles = []
+    # cmd = [git, "diff", "--name-only"]
+    # result = subprocess.check_output(cmd, universal_newlines=True).strip()
+    # for filename in result.split("\n"):
+    #   filename = Template.makeAbsolute(filename, os.getcwd())
+    #   if re.match(pattern, filename) and filename not in diffFiles:
+    #     diffFiles.append(filename)
+
+    # unstagedEdits = False
+    # for file in files:
+    #   if file in diffFiles:
+    #     unstagedEdits = True
+    #     print("File has changes not staged, cannot run on", file)
+    # if unstagedEdits:
+    #   sys.exit(1)
     return files
 
   cmd = [git, "ls-files", "--exclude-standard", "--modified", "--others"]
   result = subprocess.check_output(cmd, universal_newlines=True).strip()
   for filename in result.split("\n"):
     filename = Template.makeAbsolute(filename, os.getcwd())
-    if re.match(pattern, filename) and filename not in files:
+    if re.match(pattern, filename) and filename not in files and os.path.exists(
+      filename):
       files.append(filename)
   return files
 
@@ -69,13 +88,13 @@ def getArguments():
                       help="check clang-format")
   parser.add_argument("--tidy", action="store_true", default=False,
                       help="check clang-tidy")
-  parser.add_argument("--clang-format-binary", metavar="PATH", default="clang-format",
+  parser.add_argument("--clang-format", metavar="PATH", default="clang-format",
                       help="path to clang-format binary")
-  parser.add_argument("--clang-tidy-binary", metavar="PATH", default="clang-tidy",
+  parser.add_argument("--clang-tidy", metavar="PATH", default="clang-tidy",
                       help="path to clang-tidy binary")
-  parser.add_argument("--clang-apply-replacements-binary", metavar="PATH", default="clang-apply-replacements",
+  parser.add_argument("--clang-apply-replacements", metavar="PATH", default="clang-apply-replacements",
                       help="path to clang-apply-replacements binary")
-  parser.add_argument("--git-binary", metavar="PATH", default="git",
+  parser.add_argument("--git", metavar="PATH", default="git",
                       help="path to git binary")
   parser.add_argument("--regex", metavar="PATTERN", default=r"^((?!test).)*\.(cpp|cc|c\+\+|cxx|c|h|hpp)$",
                       help="custom pattern selecting file paths to check "
@@ -87,8 +106,8 @@ def getArguments():
                       help="check all user files, overrides --index")
   parser.add_argument("-p", metavar="PATH", default="./build/",
                       help="Path used to read a compile command database.")
-  parser.add_argument("--index", action="store_true", default=False,
-                      help="only check files added to the index")
+  parser.add_argument("--staged", action="store_true", default=False,
+                      help="only check files added to the stage (git add FILE)")
   parser.add_argument("--fix", action="store_true", default=False,
                       help="apply formatting fixes")
   parser.add_argument("--quiet", action="store_true", default=False,
@@ -110,40 +129,14 @@ def getArguments():
   if args.v:
     args.quiet = False
 
-  checkInstallations(args)
+  Template.checkInstallations(
+      git=args.git,
+      clangFormat=args.clang_format,
+      clangTidy=args.clang_tidy,
+      clangApplyReplacements=args.clang_apply_replacements,
+      quiet=args.quiet)
 
   return args
-
-## Check the required installations
-#  If an installation does not pass check, terminate program
-#  @param args to grab installation locations from
-def checkInstallations(args):
-  if args.v:
-    print("Checking git version")
-  if not Template.checkSemver([args.git_binary, "--version"], "2.17.0"):
-    print("Install git version 2.17+", file=sys.stderr)
-    sys.exit(1)
-
-  if args.format:
-    if args.v:
-      print("Checking clang-format version")
-    if not Template.checkSemver([args.clang_format_binary, "--version"], "7.0.0"):
-      print("Install clang-format version 7.0+", file=sys.stderr)
-      sys.exit(1)
-
-  if args.tidy:
-    if args.v:
-      print("Checking clang-tidy version")
-    if not Template.checkSemver([args.clang_tidy_binary, "--version"], "7.0.0"):
-      print("Install clang-tidy version 7.0+", file=sys.stderr)
-      sys.exit(1)
-
-    if args.fix:
-      if args.v:
-        print("Checking clang-apply-replacements version")
-      if not Template.checkSemver([args.clang_apply_replacements_binary, "--version"], "7.0.0"):
-        print("Install clang-apply-replacements version 7.0+", file=sys.stderr)
-        sys.exit(1)
 
 ## Thread to run clang-tidy
 #  @param clangTidy executable
@@ -154,8 +147,9 @@ def checkInstallations(args):
 #  @param tmpdir location to export list of fixes to
 #  @param quiet true will only print errors
 #  @param verbose true will print commands
+#  @param anyNotTidy when file is not tidy set true, else nothing
 def runTidy(clangTidy, queue, lock, failedCommands,
-            compilationDatabase, tmpdir, quiet, verbose):
+            compilationDatabase, tmpdir, quiet, verbose, anyNotTidy):
   while True:
     name = queue.get()
 
@@ -187,8 +181,10 @@ def runTidy(clangTidy, queue, lock, failedCommands,
       if not quiet or len(output) > 0:
         print("Tidying", name)
         print(output, flush=True)
+        anyNotTidy = True
       if "warnings generated" not in err or verbose:
         print(err, flush=True)
+        anyNotTidy = True
     queue.task_done()
 
 ## Tidy files in parallel
@@ -199,7 +195,9 @@ def runTidy(clangTidy, queue, lock, failedCommands,
 #  @param files list of files to process
 #  @param quiet true will only print errors
 #  @param verbose true will print commands
-def tidyFiles(clangTidy, compilationDatabase, tmpdir, maxTasks, files, quiet, verbose):
+#  @return bool true when all files are tidy, false otherwise
+def tidyFiles(clangTidy, compilationDatabase, tmpdir,
+              maxTasks, files, quiet, verbose):
   with open(compilationDatabase, "r") as file:
     database = json.load(file)
   compileCommandFiles = [Template.makeAbsolute(entry["file"], entry["directory"])
@@ -208,10 +206,11 @@ def tidyFiles(clangTidy, compilationDatabase, tmpdir, maxTasks, files, quiet, ve
   taskQueue = queue.Queue(maxTasks)
   failedCommands = []
   lock = threading.Lock()
+  anyNotTidy = False
   for _ in range(maxTasks):
     t = threading.Thread(target=runTidy,
                          args=(clangTidy, taskQueue, lock, failedCommands,
-                               compilationDatabase, tmpdir, quiet, verbose))
+                               compilationDatabase, tmpdir, quiet, verbose, anyNotTidy))
     t.daemon = True
     t.start()
 
@@ -226,6 +225,8 @@ def tidyFiles(clangTidy, compilationDatabase, tmpdir, maxTasks, files, quiet, ve
     print("Failed executing commands:", file=sys.stderr)
     for cmd in failedCommands:
       print(cmd, file=sys.stderr)
+    return False
+  return not anyNotTidy
 
 ## Apply changes exported from clang-tidy
 #  @param applyReplacements executable
@@ -296,6 +297,7 @@ def runFormat(clangFormat, queue, lock, failedCommands,
 #  @param verbose true will print commands
 #  @param maxTasks number of parallel tasks to execute
 #  @param files list of files to process
+#  @return bool true when all files are formatted, false otherwise
 def formatFiles(clangFormat, fix, quiet, verbose, maxTasks, files):
   taskQueue = queue.Queue(maxTasks)
   failedCommands = []
@@ -314,17 +316,22 @@ def formatFiles(clangFormat, fix, quiet, verbose, maxTasks, files):
 
   # Wait for all threads to be done.
   taskQueue.join()
+  anyNotFormatted = False
   if len(failedCommands) != 0:
     print("Failed executing commands:", file=sys.stderr)
     for cmd in failedCommands:
       print(cmd, file=sys.stderr)
+    anyNotFormatted = True
 
   if len(toFormatFiles) != 0:
     print("Need to format:")
     for file in toFormatFiles:
       print(file)
+    anyNotFormatted = True
   elif not quiet and not fix:
     print("No files need to be formatted")
+
+  return not anyNotFormatted
 
 ## Main function
 def main():
@@ -332,26 +339,34 @@ def main():
 
   files = []
   if args.a:
-    files = getFileList(args.git_binary, re.compile(args.regex, re.IGNORECASE))
+    files = getFileList(args.git, re.compile(args.regex, re.IGNORECASE))
   else:
     files = getChangedFileList(
-        args.git_binary, re.compile(args.regex, re.IGNORECASE), args.index)
+        args.git,
+        re.compile(
+            args.regex,
+            re.IGNORECASE),
+        args.staged)
 
   tmpdir = None
   if args.tidy and args.fix:
     tmpdir = tempfile.mkdtemp()
 
+  exitCode = 0
+
   try:
     if args.tidy:
-      tidyFiles(args.clang_tidy_binary, args.p, tmpdir,
-                args.j, files, args.quiet, args.v)
+      if not tidyFiles(args.clang_tidy, args.p, tmpdir,
+                       args.j, files, args.quiet, args.v):
+        exitCode = 1
 
     if tmpdir:
-      fixTidyFiles(args.clang_apply_replacements_binary, tmpdir, args.quiet)
+      fixTidyFiles(args.clang_apply_replacements, tmpdir, args.quiet)
 
     if args.format:
-      formatFiles(args.clang_format_binary, args.fix,
-                  args.quiet, args.v, args.j, files)
+      if not formatFiles(args.clang_format, args.fix,
+                         args.quiet, args.v, args.j, files):
+        exitCode = 1
 
   except KeyboardInterrupt:
     print("\nCtrl-C detected, goodbye.")
@@ -361,6 +376,8 @@ def main():
 
   if tmpdir:
     shutil.rmtree(tmpdir)
+
+  sys.exit(exitCode)
 
 
 if __name__ == "__main__":

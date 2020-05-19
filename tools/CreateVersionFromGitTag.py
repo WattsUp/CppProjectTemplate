@@ -11,16 +11,6 @@ import sys
 import traceback
 from os import path
 
-## Check the required installations
-#  If an installation does not pass check, terminate program
-#  @param args to grab installation locations from
-def checkInstallations(args):
-  if not args.quiet:
-    print("Checking git version")
-  if not Template.checkSemver([args.git_binary, "--version"], "2.17.0"):
-    print("Install git version 2.17+", file=sys.stderr)
-    sys.exit(1)
-
 ## Get the version information from the git tags and repository state
 #  @param git executable
 #  @return Template.Version object
@@ -39,17 +29,9 @@ def getVersion(git):
 
   # Check if repository contains any modifications
   modified = False
-  cmd = [git, "diff-index", "--quiet", "--cached", "HEAD"]
-  if subprocess.call(cmd):
+  cmd = [git, "status", "-s"]
+  if subprocess.check_output(cmd, universal_newlines=True).strip():
     modified = True
-  else:
-    cmd = [git, "diff-files", "--quiet"]
-    if subprocess.call(cmd):
-      modified = True
-    else:
-      cmd = [git, "ls-files", "--others", "--exclude-standard"]
-      if subprocess.check_output(cmd, universal_newlines=True).strip():
-        modified = True
 
   return Template.Version(string, ahead, modified, gitSHA)
 
@@ -60,7 +42,7 @@ def main():
                                    "from git then append how far ahead the "
                                    "current repository is. Optionally outputs "
                                    "to a version file.")
-  parser.add_argument("--git-binary", metavar="PATH", default="git",
+  parser.add_argument("--git", metavar="PATH", default="git",
                       help="path to git binary")
   parser.add_argument("--output", metavar="PATH",
                       help="output file to write version info, default stdout")
@@ -70,10 +52,12 @@ def main():
   argv = sys.argv[1:]
   args = parser.parse_args(argv)
 
-  checkInstallations(args)
+  Template.checkInstallations(
+      git=args.git,
+      quiet=args.quiet)
 
   try:
-    version = getVersion(args.git_binary)
+    version = getVersion(args.git)
   except Exception:
     print("Exception getting version from git tags", file=sys.stderr)
     traceback.print_exc()

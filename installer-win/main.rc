@@ -3,20 +3,31 @@
 #define VERSION_DEFINES
 #include "common/version.h"
 
-#ifndef IDI_ICON1
-#define IDI_ICON1 1
+#include "Resources.h"
+#ifndef RES_ARCHIVE
+#define RES_ARCHIVE 1
 #endif
 
-#define NAME "Fractal"
-#define DESCRIPTION NAME " - Fractal generator project template"
+#ifdef DEBUG
+RES_ARCHIVE RCDATA bin/archived.zip
+#else
+RES_ARCHIVE RCDATA bin/archive.zip
+#endif
+
+#ifndef RES_ICON
+#define RES_ICON 1
+#endif
+
+#define NAME "Fractal Installer"
+#define DESCRIPTION NAME " - Self-extracting installer for fractal generator project template"
 #define HOMEPAGE "http://bradleydavis.tech/lab/cpptemplate"
 #define LICENSE ""
 #define COPYRIGHT ""
 
-#define EXE "fractal.exe"
-#define ICO "Fractal.ico"
+#define EXE "installer.exe"
+#define ICO "installer.ico"
 
-IDI_ICON1 ICON DISCARDABLE ICO
+RES_ICON ICON DISCARDABLE ICO
 
 VS_VERSION_INFO VERSIONINFO
 FILEVERSION VERSION_MAJOR,VERSION_MINOR,VERSION_PATCH,VERSION_AHEAD

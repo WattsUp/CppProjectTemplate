@@ -5,10 +5,13 @@ if sys.version_info[0] != 3 or sys.version_info[1] < 6:
   print("This script requires Python version >=3.6")
   sys.exit(1)
 
+import argparse
 import os
+import pickle
 import re
 import subprocess
 import stat
+import traceback
 
 ## Semantic versioning object with string parsing
 class Version:
@@ -142,3 +145,150 @@ def overwriteIfChanged(path, data, quiet):
       file.write(data)
       if not quiet:
         print("Wrote to:", path)
+
+## Class to track the progress of a procedure between runs of the script
+class Progress:
+  ## Initialize a progress object
+  #  @param self object pointer
+  #  @param step of current progress
+  #  @param path to save progress object to
+  def __init__(self, step=0, path='progress.pkl'):
+    self.step = step
+    self.path = makeAbsolute(path, os.getcwd())
+    self.attachment = None
+
+  ## Open progress from save file
+  #  @param self object pointer
+  #  @return Progress object loaded from save if path exists
+  def open(self):
+    if os.path.exists(self.path):
+      with open(self.path, 'rb') as file:
+        return pickle.load(file)
+    return self
+
+  ## Increment progress and save progress to file
+  #  @param self object pointer
+  def increment(self):
+    self.step += 1
+    with open(self.path, 'wb') as file:
+      pickle.dump(self, file, pickle.HIGHEST_PROTOCOL)
+
+  ## Complete the procedure by deleting the progress save file
+  #  @param self object pointer
+  def complete(self):
+    if os.path.exists(self.path):
+      os.remove(self.path)
+
+## Check the required installations
+#  If an installation does not pass check, terminate program
+#  @param git executable
+#  @param gitConfig will check for user.name and user.email when true
+#  @param clangFormat executable
+#  @param clangTidy executable
+#  @param clangApplyReplacements executable
+#  @param doxygen executable
+#  @param cmake executable
+#  @param testCompiler will test for a compiler when true
+#  @param quiet will only print errors
+def checkInstallations(git=None, gitConfig=False, clangFormat=None, clangTidy=None, clangApplyReplacements=None,
+                       doxygen=None, cmake=None, testCompiler=False, quiet=False):
+  if git:
+    if not quiet:
+      print("Checking git version")
+    if not checkSemver([git, "--version"], "2.17.0"):
+      print("Install git version 2.17+", file=sys.stderr)
+      sys.exit(1)
+
+    if gitConfig:
+      if not quiet:
+        print("Checking git config")
+      try:
+        call([git, "config", "--global", "user.name"])
+        call([git, "config", "--global", "user.email"])
+      except Exception:
+        print("No identity for git", file=sys.stderr)
+        print("git config --global user.name \"Your name\"", file=sys.stderr)
+        print(
+            "git config --global user.email \"you@example.com\"",
+            file=sys.stderr)
+        sys.exit(1)
+
+  if clangFormat:
+    if not quiet:
+      print("Checking clang-format version")
+    if not checkSemver([clangFormat, "--version"], "7.0.0"):
+      print("Install clang-format version 7.0+", file=sys.stderr)
+      sys.exit(1)
+
+  if clangTidy:
+    if not quiet:
+      print("Checking clang-tidy version")
+    if not checkSemver([clangTidy, "--version"], "7.0.0"):
+      print("Install clang-tidy version 7.0+", file=sys.stderr)
+      sys.exit(1)
+
+  if clangApplyReplacements:
+    if not quiet:
+      print("Checking clang-apply-replacements version")
+    if not checkSemver([clangApplyReplacements, "--version"], "7.0.0"):
+      print("Install clang-apply-replacements version 7.0+", file=sys.stderr)
+      sys.exit(1)
+
+  if doxygen:
+    if not quiet:
+      print("Checking doxygen version")
+    if not checkSemver([doxygen, "--version"], "1.8.17"):
+      print("Install doxygen version 1.8.17+", file=sys.stderr)
+      sys.exit(1)
+
+  if cmake:
+    if not quiet:
+      print("Checking cmake version")
+    if not checkSemver([cmake, "--version"], "3.13.0"):
+      print("Install cmake version 3.13+", file=sys.stderr)
+      sys.exit(1)
+
+    if testCompiler:
+      if not quiet:
+        print("Checking working compiler exists")
+      try:
+        call([cmake, "-E", "make_directory", "__temp__"])
+        call([cmake, "-E", "touch", "CMakeLists.txt"], "__temp__")
+        call([cmake, "--check-system-vars", "-Wno-dev", "."], "__temp__")
+        call([cmake, "-E", "remove_directory", "__temp__"])
+      except Exception:
+        print("Failed to check for a compiler", file=sys.stderr)
+        traceback.print_exc()
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+  parser = argparse.ArgumentParser(
+      description="Check for all software dependencies")
+  parser.add_argument("--cmake", metavar="PATH", default="cmake",
+                      help="path to cmake binary")
+  parser.add_argument("--clang-format", metavar="PATH", default="clang-format",
+                      help="path to clang-format binary")
+  parser.add_argument("--clang-tidy", metavar="PATH", default="clang-tidy",
+                      help="path to clang-tidy binary")
+  parser.add_argument("--clang-apply-replacements", metavar="PATH", default="clang-apply-replacements",
+                      help="path to clang-apply-replacements binary")
+  parser.add_argument("--git", metavar="PATH", default="git",
+                      help="path to git binary")
+  parser.add_argument("--doxygen", metavar="PATH", default="doxygen",
+                      help="path to doxygen binary")
+
+  argv = sys.argv[1:]
+  args = parser.parse_args(argv)
+
+  checkInstallations(
+      args.git,
+      True,
+      args.clang_format,
+      args.clang_tidy,
+      args.clang_apply_replacements,
+      args.doxygen,
+      args.cmake,
+      True,
+      False)
+  print("All software dependencies have been installed")
