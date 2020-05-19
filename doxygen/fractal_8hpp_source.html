@@ -7,7 +7,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=9" />
   <meta name="generator" content="Doxygen 1.8.17" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>project-template: project-fractal/Fractal.hpp Source File</title>
+  <title>project-template: project-fractal/fractal.hpp Source File</title>
   <link href="tabs.css" rel="stylesheet" type="text/css" />
   <script type="text/javascript" src="jquery.js"></script>
   <script type="text/javascript" src="dynsections.js"></script>
@@ -35,7 +35,7 @@
             <td id="projectlogo"><img alt="Logo" src="logo.png" /></td>
             <td id="projectalign" style="padding-left: 0.5em;">
               <div id="projectname">project-template
-                &#160;<span id="projectnumber">v2.0.2</span>
+                &#160;<span id="projectnumber">v2.1.0</span>
               </div>
               <div id="projectbrief">A template repository for C++ projects</div>
             </td>
@@ -57,19 +57,19 @@
 </div>
 <script type="text/javascript">
 /* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
-$(document).ready(function(){initNavTree('_fractal_8hpp_source.html',''); initResizable(); });
+$(document).ready(function(){initNavTree('fractal_8hpp_source.html',''); initResizable(); });
 /* @license-end */
 </script>
 <div id="doc-content">
 <div class="header">
   <div class="headertitle">
-<div class="title">Fractal.hpp</div>  </div>
+<div class="title">fractal.hpp</div>  </div>
 </div><!--header-->
 <div class="contents">
-<a href="_fractal_8hpp.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="preprocessor">#ifndef _FRACTAL_FRACTAL_H_</span></div>
+<a href="fractal_8hpp.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="preprocessor">#ifndef _FRACTAL_FRACTAL_H_</span></div>
 <div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="preprocessor">#define _FRACTAL_FRACTAL_H_</span></div>
 <div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
-<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="_complex_8hpp.html">math/Complex.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="complex_8hpp.html">math/complex.hpp</a>&quot;</span></div>
 <div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
 <div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;array&gt;</span></div>
 <div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &lt;cstdint&gt;</span></div>
@@ -97,22 +97,22 @@ $(document).ready(function(){initNavTree('_fractal_8hpp_source.html',''); initRe
 <div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* _FRACTAL_FRACTAL_H_ */</span><span class="preprocessor"></span></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
-<div class="ttc" id="aclassfractal_1_1_fractal_html_a19e18dde666cf623f2635962ea77222d"><div class="ttname"><a href="classfractal_1_1_fractal.html#a19e18dde666cf623f2635962ea77222d">fractal::Fractal::countInterations</a></div><div class="ttdeci">uint8_t countInterations(math::Complex seed)</div><div class="ttdoc">Count the number of iteration required for a seed to diverge.</div><div class="ttdef"><b>Definition:</b> <a href="_fractal_8cpp_source.html#l00029">Fractal.cpp:29</a></div></div>
-<div class="ttc" id="aclassfractal_1_1_fractal_html_a3c4e9c73e3e60b3b87a296e04e9a937d"><div class="ttname"><a href="classfractal_1_1_fractal.html#a3c4e9c73e3e60b3b87a296e04e9a937d">fractal::Fractal::print</a></div><div class="ttdeci">void print()</div><div class="ttdoc">Print the fractal to the screen.</div><div class="ttdef"><b>Definition:</b> <a href="_fractal_8cpp_source.html#l00044">Fractal.cpp:44</a></div></div>
-<div class="ttc" id="aclassfractal_1_1math_1_1_complex_html"><div class="ttname"><a href="classfractal_1_1math_1_1_complex.html">fractal::math::Complex</a></div><div class="ttdoc">Complex number class with real and imaginary components.</div><div class="ttdef"><b>Definition:</b> <a href="_complex_8hpp_source.html#l00015">Complex.hpp:15</a></div></div>
-<div class="ttc" id="aclassfractal_1_1_fractal_html"><div class="ttname"><a href="classfractal_1_1_fractal.html">fractal::Fractal</a></div><div class="ttdoc">Fractal generation class Creates an array of iteration counts. Runs a fractal formula on the correspo...</div><div class="ttdef"><b>Definition:</b> <a href="_fractal_8hpp_source.html#l00018">Fractal.hpp:18</a></div></div>
-<div class="ttc" id="aclassfractal_1_1_fractal_html_a3dcd3304162fede523ab513a8115150c"><div class="ttname"><a href="classfractal_1_1_fractal.html#a3dcd3304162fede523ab513a8115150c">fractal::Fractal::MAX_ITR</a></div><div class="ttdeci">static constexpr uint8_t MAX_ITR</div><div class="ttdoc">Maximum iterations to converge.</div><div class="ttdef"><b>Definition:</b> <a href="_fractal_8hpp_source.html#l00029">Fractal.hpp:29</a></div></div>
-<div class="ttc" id="aclassfractal_1_1_fractal_html_a9cf2cdb7929f41134415b2265913956d"><div class="ttname"><a href="classfractal_1_1_fractal.html#a9cf2cdb7929f41134415b2265913956d">fractal::Fractal::Fractal</a></div><div class="ttdeci">Fractal()</div><div class="ttdoc">Construct a new Fractal object.</div><div class="ttdef"><b>Definition:</b> <a href="_fractal_8cpp_source.html#l00011">Fractal.cpp:11</a></div></div>
-<div class="ttc" id="aclassfractal_1_1_fractal_html_a37ffb3832862fba1672e23aa5e2a363b"><div class="ttname"><a href="classfractal_1_1_fractal.html#a37ffb3832862fba1672e23aa5e2a363b">fractal::Fractal::SIZE</a></div><div class="ttdeci">static constexpr size_t SIZE</div><div class="ttdoc">Number of grid points.</div><div class="ttdef"><b>Definition:</b> <a href="_fractal_8hpp_source.html#l00027">Fractal.hpp:27</a></div></div>
-<div class="ttc" id="anamespacefractal_html"><div class="ttname"><a href="namespacefractal.html">fractal</a></div><div class="ttdef"><b>Definition:</b> <a href="_fractal_8cpp_source.html#l00005">Fractal.cpp:5</a></div></div>
-<div class="ttc" id="aclassfractal_1_1_fractal_html_a6ad2ccf300547063e1dccd687faaf31b"><div class="ttname"><a href="classfractal_1_1_fractal.html#a6ad2ccf300547063e1dccd687faaf31b">fractal::Fractal::VIEW_MAX</a></div><div class="ttdeci">static constexpr double VIEW_MAX</div><div class="ttdoc">Bounds of grid coordinates.</div><div class="ttdef"><b>Definition:</b> <a href="_fractal_8hpp_source.html#l00028">Fractal.hpp:28</a></div></div>
-<div class="ttc" id="a_complex_8hpp_html"><div class="ttname"><a href="_complex_8hpp.html">Complex.hpp</a></div></div>
+<div class="ttc" id="aclassfractal_1_1_fractal_html_a19e18dde666cf623f2635962ea77222d"><div class="ttname"><a href="classfractal_1_1_fractal.html#a19e18dde666cf623f2635962ea77222d">fractal::Fractal::countInterations</a></div><div class="ttdeci">uint8_t countInterations(math::Complex seed)</div><div class="ttdoc">Count the number of iteration required for a seed to diverge.</div><div class="ttdef"><b>Definition:</b> <a href="fractal_8cpp_source.html#l00029">fractal.cpp:29</a></div></div>
+<div class="ttc" id="acomplex_8hpp_html"><div class="ttname"><a href="complex_8hpp.html">complex.hpp</a></div></div>
+<div class="ttc" id="aclassfractal_1_1_fractal_html_a3c4e9c73e3e60b3b87a296e04e9a937d"><div class="ttname"><a href="classfractal_1_1_fractal.html#a3c4e9c73e3e60b3b87a296e04e9a937d">fractal::Fractal::print</a></div><div class="ttdeci">void print()</div><div class="ttdoc">Print the fractal to the screen.</div><div class="ttdef"><b>Definition:</b> <a href="fractal_8cpp_source.html#l00044">fractal.cpp:44</a></div></div>
+<div class="ttc" id="aclassfractal_1_1math_1_1_complex_html"><div class="ttname"><a href="classfractal_1_1math_1_1_complex.html">fractal::math::Complex</a></div><div class="ttdoc">Complex number class with real and imaginary components.</div><div class="ttdef"><b>Definition:</b> <a href="complex_8hpp_source.html#l00015">complex.hpp:15</a></div></div>
+<div class="ttc" id="aclassfractal_1_1_fractal_html"><div class="ttname"><a href="classfractal_1_1_fractal.html">fractal::Fractal</a></div><div class="ttdoc">Fractal generation class Creates an array of iteration counts. Runs a fractal formula on the correspo...</div><div class="ttdef"><b>Definition:</b> <a href="fractal_8hpp_source.html#l00018">fractal.hpp:18</a></div></div>
+<div class="ttc" id="aclassfractal_1_1_fractal_html_a3dcd3304162fede523ab513a8115150c"><div class="ttname"><a href="classfractal_1_1_fractal.html#a3dcd3304162fede523ab513a8115150c">fractal::Fractal::MAX_ITR</a></div><div class="ttdeci">static constexpr uint8_t MAX_ITR</div><div class="ttdoc">Maximum iterations to converge.</div><div class="ttdef"><b>Definition:</b> <a href="fractal_8hpp_source.html#l00029">fractal.hpp:29</a></div></div>
+<div class="ttc" id="aclassfractal_1_1_fractal_html_a9cf2cdb7929f41134415b2265913956d"><div class="ttname"><a href="classfractal_1_1_fractal.html#a9cf2cdb7929f41134415b2265913956d">fractal::Fractal::Fractal</a></div><div class="ttdeci">Fractal()</div><div class="ttdoc">Construct a new Fractal object.</div><div class="ttdef"><b>Definition:</b> <a href="fractal_8cpp_source.html#l00011">fractal.cpp:11</a></div></div>
+<div class="ttc" id="aclassfractal_1_1_fractal_html_a37ffb3832862fba1672e23aa5e2a363b"><div class="ttname"><a href="classfractal_1_1_fractal.html#a37ffb3832862fba1672e23aa5e2a363b">fractal::Fractal::SIZE</a></div><div class="ttdeci">static constexpr size_t SIZE</div><div class="ttdoc">Number of grid points.</div><div class="ttdef"><b>Definition:</b> <a href="fractal_8hpp_source.html#l00027">fractal.hpp:27</a></div></div>
+<div class="ttc" id="anamespacefractal_html"><div class="ttname"><a href="namespacefractal.html">fractal</a></div><div class="ttdef"><b>Definition:</b> <a href="fractal_8cpp_source.html#l00005">fractal.cpp:5</a></div></div>
+<div class="ttc" id="aclassfractal_1_1_fractal_html_a6ad2ccf300547063e1dccd687faaf31b"><div class="ttname"><a href="classfractal_1_1_fractal.html#a6ad2ccf300547063e1dccd687faaf31b">fractal::Fractal::VIEW_MAX</a></div><div class="ttdeci">static constexpr double VIEW_MAX</div><div class="ttdoc">Bounds of grid coordinates.</div><div class="ttdef"><b>Definition:</b> <a href="fractal_8hpp_source.html#l00028">fractal.hpp:28</a></div></div>
 <!-- HTML footer for doxygen 1.8.17-->
 <!-- start footer part -->
 <div id="nav-path" class="navpath">
   <!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><a class="el" href="dir_2258931afb00e25dcb84c5e9d997849f.html">project-fractal</a></li><li class="navelem"><a class="el" href="_fractal_8hpp.html">Fractal.hpp</a></li>
+    <li class="navelem"><a class="el" href="dir_2258931afb00e25dcb84c5e9d997849f.html">project-fractal</a></li><li class="navelem"><a class="el" href="fractal_8hpp.html">fractal.hpp</a></li>
     <li class="footer">Generated by
       <a href="http://www.doxygen.org/index.html">
         <img class="footer" src="doxygen.png" alt="doxygen" /></a> 1.8.17 </li>
