@@ -92,7 +92,6 @@ int main(int argc, char* argv[]) {
     if (!extractArchive("temp")) {
       spdlog::error("Error occurred whilst extracting archive");
     }
-
   } catch (std::exception& e) {
     // Catch exceptions from spdlog
     puts(e.what());
