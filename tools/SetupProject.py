@@ -143,20 +143,21 @@ def resetGit(git):
     print("Created new git repository")
 
     # Get list of previous submodules and add them to the fresh repository
-    cmd = [git, "config", "-f", ".gitmodules",
-           "--get-regexp", "^submodule\\..*\\.path$"]
-    submodules = subprocess.check_output(cmd, universal_newlines=True).strip()
+    if os.path.exists(".gitmodules"):
+      cmd = [git, "config", "-f", ".gitmodules",
+            "--get-regexp", "^submodule\\..*\\.path$"]
+      submodules = subprocess.check_output(cmd, universal_newlines=True).strip()
 
-    for submodule in submodules.split("\n"):
-      # Get the URL and local path of each submodule
-      matches = re.search(r"^(submodule\..*\.)path (.*)$", submodule)
-      path = matches[2]
-      cmd = [git, "config", "-f", ".gitmodules", "--get", matches[1] + "url"]
-      url = subprocess.check_output(cmd, universal_newlines=True).strip()
+      for submodule in submodules.split("\n"):
+        # Get the URL and local path of each submodule
+        matches = re.search(r"^(submodule\..*\.)path (.*)$", submodule)
+        path = matches[2]
+        cmd = [git, "config", "-f", ".gitmodules", "--get", matches[1] + "url"]
+        url = subprocess.check_output(cmd, universal_newlines=True).strip()
 
-      shutil.rmtree(path, ignore_errors=True)
-      Template.call([git, "submodule", "add", url, path])
-      print("Added {} to {}".format(url, path))
+        shutil.rmtree(path, ignore_errors=True)
+        Template.call([git, "submodule", "add", url, path])
+        print("Added {} to {}".format(url, path))
 
     Template.call([git, "add", "."])
 
