@@ -26,12 +26,17 @@ Includes
 * [Doxygen Documentation Generator](https://marketplace.visualstudio.com/items?itemName=cschlosser.doxdocgen)
 
 ## Building ##
+### Dependencies ###
+On Windows I recommend using [vcpkg](https://github.com/Microsoft/vcpkg)
+* [spdlog](https://github.com/gabime/spdlog) logging library
+* [Google Test](https://github.com/google/googletest) framework
+
 ### Git Clone ###
-Clone the repository and its submodules
+Clone the repository
 ```bash
 > mkdir workspace
 > cd workspace
-> git clone --recurse-submodules https://github.com/WattsUp/CppProjectTemplate myProject
+> git clone https://github.com/WattsUp/CppProjectTemplate myProject
 ```
 
 ### Manually Building ###
@@ -53,12 +58,12 @@ Configure the project with default compiler and compile
 * `docs`      Documentation folder
 * `docs\www`  Documentation webpage root folder, ignored, clone of repository's gh-pages branch
 * `include`   Public include folder for libraries
-* `libraries` Third party libraries usually included as a `git submodule`
+* `libraries` Third party libraries
 * `tools`     Helper code such as check coding conventions script
 
 ### Projects ###
-* `project-installer` Installer executable which sets up directories, variables, etc.
-* `project-fractal`   Application to draw a fractal to the console
+* `installer-win`   Self-extracting installer executable which sets up directories, variables, etc.
+* `project-fractal` Application to draw a fractal to the console
 
 ## Adapting ##
 1. Clone the repository, see [Git Clone](#git-clone). (Or download manually)
