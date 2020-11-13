@@ -21,3 +21,5 @@ set (SRCS_WIN
 )
 
 target_sources("fractal" PRIVATE ${SRCS} $<IF:$<BOOL:${WIN32}>, ${SRCS_WIN}, ${SRCS_UNIX}>)
+
+target_link_libraries("fractal" PRIVATE "library")

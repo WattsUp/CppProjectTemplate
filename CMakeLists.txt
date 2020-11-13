@@ -22,6 +22,11 @@ include(GNUInstallDirs)
 #   message("Please switch to a x64 build")
 #   return()
 # endif()
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+  set(ARCHITECTURE "x64")
+else()
+  set(ARCHITECTURE "x86")
+endif()
 
 # Global setting: Use C++14
 set(CMAKE_CXX_STANDARD 14)
@@ -43,12 +48,12 @@ cmake_policy(SET CMP0076 NEW)
 cmake_policy(SET CMP0087 NEW)
 
 # Output binaries to ./bin
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/output/debug")
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/output/release")
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/output/debug")
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/output/release")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/output/debug")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/output/release")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/output/debug-${ARCHITECTURE}")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/output/release-${ARCHITECTURE}")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/output/debug-${ARCHITECTURE}")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/output/release-${ARCHITECTURE}")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/output/debug-${ARCHITECTURE}")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/output/release-${ARCHITECTURE}")
 
 # Targets not included in the public distributable
 set (TARGETS_NODIST
@@ -64,10 +69,14 @@ set (TARGETS_NODISTCONFIG
 # Targets included in the public distributable
 set (TARGETS_DIST
   "fractal"       # Main executable
+  "library"       # Main library
 )
 
+# Executable options: "default", "WinMain"
+# Library options: "STATIC", "SHARED", "library" (uses BUILD_SHARED_LIBS)
 set (TARGETS_DISTCONFIG
   "WinMain" # fractal
+  "library" # library
 )
 
 list(APPEND TARGETS ${TARGETS_NODIST})
@@ -105,7 +114,27 @@ foreach(INDEX RANGE ${TARGETS_LENGTH})
   list(GET TARGETS ${INDEX} TARGET)
   list(GET TARGETS_CONFIG ${INDEX} CONFIG)
 
-  if (${CONFIG} MATCHES "^WinMain$" AND WIN32)
+  if (${CONFIG} MATCHES "^library$" OR ${CONFIG} MATCHES "^SHARED$" OR ${CONFIG} MATCHES "^STATIC$")
+    if (${CONFIG} MATCHES "^library$")
+      add_library(${TARGET} "")
+    else()
+      add_library(${TARGET} ${CONFIG} "")
+    endif()
+
+    get_target_property(TYPE ${TARGET} TYPE)
+    message(${TYPE})
+    if(${TYPE} MATCHES "^SHARED_LIBRARY")
+      # Get #define compatible target name
+      string(TOUPPER ${TARGET} TARGET_DEFINE)
+      string(REPLACE "-" "_" TARGET_DEFINE ${TARGET_DEFINE})
+
+      # Set linking as shared library for all targets
+      add_compile_definitions("${TARGET_DEFINE}_LINKED_AS_SHARED_LIBRARY")
+
+      # Override with build shared library for the library target
+      target_compile_definitions(${TARGET} PRIVATE "${TARGET_DEFINE}_CREATE_SHARED_LIBRARY")
+    endif()
+  elseif (${CONFIG} MATCHES "^WinMain$" AND WIN32)
     # Looks for int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, char* args, int nShowCmd)
     add_executable(${TARGET} WIN32)
   elseif(NOT ${TARGET} MATCHES "^.*-win$" OR WIN32)
@@ -140,13 +169,19 @@ foreach(INDEX RANGE ${TARGETS_LENGTH})
 
   add_custom_command(TARGET ${TARGET} PRE_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-      ${CMAKE_SOURCE_DIR}/res/ $<TARGET_FILE_DIR:${TARGET}>)
+      "${CMAKE_SOURCE_DIR}/res/" "$<TARGET_FILE_DIR:${TARGET}>/res")
 
 endforeach()
 
 foreach(TARGET ${TARGETS_NODIST})
   set_target_properties(${TARGET} PROPERTIES EXCLUDE_FROM_ALL ON)
 endforeach()
+
+# Force rebuild of installer-win every time
+# Due to resource file updates not noticed
+add_custom_command(TARGET "installer-win" POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E remove_directory
+    "${CMAKE_BINARY_DIR}/CMakeFiles/installer-win.dir")
 
 # Generate doxygen when building release type builds
 find_package(Doxygen)
@@ -244,3 +279,4 @@ add_subdirectory("installer-win")
 
 # Add each target subdirectory
 add_subdirectory("project-fractal")
+add_subdirectory("project-library")
