@@ -26,18 +26,17 @@ var NAVTREE =
     [ "C++ Project Template", "index.html", [
       [ "Prerequisites", "index.html#autotoc_md1", null ],
       [ "Building", "index.html#autotoc_md2", [
-        [ "Git Clone", "index.html#autotoc_md3", null ],
-        [ "Manually Building", "index.html#autotoc_md4", null ],
-        [ "Building in VSCode", "index.html#autotoc_md5", null ]
+        [ "Dependencies", "index.html#autotoc_md3", null ],
+        [ "Git Clone", "index.html#autotoc_md4", null ],
+        [ "Manually Building", "index.html#autotoc_md5", null ],
+        [ "Building in VSCode", "index.html#autotoc_md6", null ]
       ] ],
-      [ "Folder Structure", "index.html#autotoc_md6", [
-        [ "Projects", "index.html#autotoc_md7", null ]
+      [ "Folder Structure", "index.html#autotoc_md7", [
+        [ "Projects", "index.html#autotoc_md8", null ]
       ] ],
-      [ "Adapting", "index.html#autotoc_md8", [
-        [ "Modify Project Name", "index.html#autotoc_md9", null ],
-        [ "Modify Sub Projects and Targets", "index.html#autotoc_md10", null ],
-        [ "Documentation branch", "index.html#autotoc_md11", null ]
-      ] ]
+      [ "Adapting", "index.html#autotoc_md9", null ],
+      [ "Documentation branch", "index.html#autotoc_md10", null ],
+      [ "Known issues", "index.html#autotoc_md11", null ]
     ] ],
     [ "Namespaces", "namespaces.html", [
       [ "Namespace List", "namespaces.html", "namespaces_dup" ],
@@ -71,7 +70,7 @@ var NAVTREE =
 
 var NAVTREEINDEX =
 [
-"_version_8h.html"
+"annotated.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

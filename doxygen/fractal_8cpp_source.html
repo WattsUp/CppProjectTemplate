@@ -35,7 +35,7 @@
             <td id="projectlogo"><img alt="Logo" src="logo.png" /></td>
             <td id="projectalign" style="padding-left: 0.5em;">
               <div id="projectname">project-template
-                &#160;<span id="projectnumber">v2.1.0</span>
+                &#160;<span id="projectnumber">v2.2.0</span>
               </div>
               <div id="projectbrief">A template repository for C++ projects</div>
             </td>
@@ -69,58 +69,63 @@ $(document).ready(function(){initNavTree('fractal_8cpp_source.html',''); initRes
 <a href="fractal_8cpp.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="fractal_8hpp.html">fractal.hpp</a>&quot;</span></div>
 <div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160; </div>
 <div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="logging_8hpp.html">common/logging.hpp</a>&quot;</span></div>
-<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160; </div>
-<div class="line"><a name="l00005"></a><span class="lineno"><a class="line" href="namespacefractal.html">    5</a></span>&#160;<span class="keyword">namespace </span><a class="code" href="namespacefractal.html">fractal</a> {</div>
-<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160; </div>
-<div class="line"><a name="l00011"></a><span class="lineno"><a class="line" href="classfractal_1_1_fractal.html#a9cf2cdb7929f41134415b2265913956d">   11</a></span>&#160;<a class="code" href="classfractal_1_1_fractal.html#a9cf2cdb7929f41134415b2265913956d">Fractal::Fractal</a>() {</div>
-<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;  <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> y = 0; y &lt; <a class="code" href="classfractal_1_1_fractal.html#a37ffb3832862fba1672e23aa5e2a363b">SIZE</a>; ++y) {</div>
-<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> x = 0; x &lt; <a class="code" href="classfractal_1_1_fractal.html#a37ffb3832862fba1672e23aa5e2a363b">SIZE</a>; ++x) {</div>
-<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;      <span class="comment">// Fractal is -VIEW_MAX to VIEW_MAX</span></div>
-<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;      <a class="code" href="classfractal_1_1math_1_1_complex.html">math::Complex</a> seed(</div>
-<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;          <span class="keyword">static_cast&lt;</span><span class="keywordtype">double</span><span class="keyword">&gt;</span>(x) * <a class="code" href="classfractal_1_1_fractal.html#a6ad2ccf300547063e1dccd687faaf31b">VIEW_MAX</a> * 2 / <a class="code" href="classfractal_1_1_fractal.html#a37ffb3832862fba1672e23aa5e2a363b">SIZE</a> - <a class="code" href="classfractal_1_1_fractal.html#a6ad2ccf300547063e1dccd687faaf31b">VIEW_MAX</a>,</div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;          <span class="keyword">static_cast&lt;</span><span class="keywordtype">double</span><span class="keyword">&gt;</span>(y) * <a class="code" href="classfractal_1_1_fractal.html#a6ad2ccf300547063e1dccd687faaf31b">VIEW_MAX</a> * 2 / <a class="code" href="classfractal_1_1_fractal.html#a37ffb3832862fba1672e23aa5e2a363b">SIZE</a> - <a class="code" href="classfractal_1_1_fractal.html#a6ad2ccf300547063e1dccd687faaf31b">VIEW_MAX</a>);</div>
-<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;      <a class="code" href="namespacefractal.html">fractal</a>.at(y).at(x) = <a class="code" href="classfractal_1_1_fractal.html#a19e18dde666cf623f2635962ea77222d">countInterations</a>(seed);</div>
-<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;    }</div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;  }</div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;}</div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160; </div>
-<div class="line"><a name="l00029"></a><span class="lineno"><a class="line" href="classfractal_1_1_fractal.html#a19e18dde666cf623f2635962ea77222d">   29</a></span>&#160;uint8_t <a class="code" href="classfractal_1_1_fractal.html#a19e18dde666cf623f2635962ea77222d">Fractal::countInterations</a>(<a class="code" href="classfractal_1_1math_1_1_complex.html">math::Complex</a> seed) {</div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;  uint8_t count = 0;</div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;  <a class="code" href="classfractal_1_1math_1_1_complex.html">math::Complex</a> value(0, 0);</div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;  <span class="keywordflow">while</span> (count &lt; <a class="code" href="classfractal_1_1_fractal.html#a3dcd3304162fede523ab513a8115150c">MAX_ITR</a> &amp;&amp; value.<a class="code" href="classfractal_1_1math_1_1_complex.html#ad376a61369ca54862cb09c7af16a9cd4">getMagnitude</a>() &lt; 1.0) {</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;    value = value * value + seed;</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    ++count;</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;  }</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;  <span class="keywordflow">return</span> count;</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;}</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160; </div>
-<div class="line"><a name="l00044"></a><span class="lineno"><a class="line" href="classfractal_1_1_fractal.html#a3c4e9c73e3e60b3b87a296e04e9a937d">   44</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="classfractal_1_1_fractal.html#a3c4e9c73e3e60b3b87a296e04e9a937d">Fractal::print</a>() {</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;  <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> y = 0; y &lt; <a class="code" href="classfractal_1_1_fractal.html#a37ffb3832862fba1672e23aa5e2a363b">SIZE</a>; ++y) {</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    std::array&lt;char, SIZE + 1&gt; buf{<span class="stringliteral">&quot;&quot;</span>};</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    buf.at(<a class="code" href="classfractal_1_1_fractal.html#a37ffb3832862fba1672e23aa5e2a363b">SIZE</a>) = <span class="charliteral">&#39;\0&#39;</span>;</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> x = 0; x &lt; <a class="code" href="classfractal_1_1_fractal.html#a37ffb3832862fba1672e23aa5e2a363b">SIZE</a>; ++x) {</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;      <span class="comment">// Fractal is -1.5 to 1.5</span></div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;      <span class="comment">// NOLINTNEXTLINE (bug-prone-narrowing-conversions)</span></div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;      buf.at(x) = <span class="keyword">static_cast&lt;</span><span class="keywordtype">char</span><span class="keyword">&gt;</span>((<a class="code" href="namespacefractal.html">fractal</a>.at(y).at(x) &gt;&gt; uint8_t{5}) + <span class="charliteral">&#39;0&#39;</span>);</div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    }</div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    spdlog::info(buf.data());</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;  }</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;}</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160; </div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;}  <span class="comment">// namespace fractal</span></div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="library_8h.html">library/library.h</a>&quot;</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno"><a class="line" href="namespacefractal.html">    6</a></span>&#160;<span class="keyword">namespace </span><a class="code" href="namespacefractal.html">fractal</a> {</div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160; </div>
+<div class="line"><a name="l00012"></a><span class="lineno"><a class="line" href="classfractal_1_1_fractal.html#a9cf2cdb7929f41134415b2265913956d">   12</a></span>&#160;<a class="code" href="classfractal_1_1_fractal.html#a9cf2cdb7929f41134415b2265913956d">Fractal::Fractal</a>() {</div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;  <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> y = 0; y &lt; <a class="code" href="classfractal_1_1_fractal.html#a37ffb3832862fba1672e23aa5e2a363b">SIZE</a>; ++y) {</div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> x = 0; x &lt; <a class="code" href="classfractal_1_1_fractal.html#a37ffb3832862fba1672e23aa5e2a363b">SIZE</a>; ++x) {</div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;      <span class="comment">// Fractal is -VIEW_MAX to VIEW_MAX</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;      <a class="code" href="classfractal_1_1math_1_1_complex.html">math::Complex</a> seed(</div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;          <span class="keyword">static_cast&lt;</span><span class="keywordtype">double</span><span class="keyword">&gt;</span>(x) * <a class="code" href="classfractal_1_1_fractal.html#a6ad2ccf300547063e1dccd687faaf31b">VIEW_MAX</a> * 2 / <a class="code" href="classfractal_1_1_fractal.html#a37ffb3832862fba1672e23aa5e2a363b">SIZE</a> - <a class="code" href="classfractal_1_1_fractal.html#a6ad2ccf300547063e1dccd687faaf31b">VIEW_MAX</a>,</div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;          <span class="keyword">static_cast&lt;</span><span class="keywordtype">double</span><span class="keyword">&gt;</span>(y) * <a class="code" href="classfractal_1_1_fractal.html#a6ad2ccf300547063e1dccd687faaf31b">VIEW_MAX</a> * 2 / <a class="code" href="classfractal_1_1_fractal.html#a37ffb3832862fba1672e23aa5e2a363b">SIZE</a> - <a class="code" href="classfractal_1_1_fractal.html#a6ad2ccf300547063e1dccd687faaf31b">VIEW_MAX</a>);</div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;      <a class="code" href="namespacefractal.html">fractal</a>.at(y).at(x) = <a class="code" href="classfractal_1_1_fractal.html#a19e18dde666cf623f2635962ea77222d">countInterations</a>(seed);</div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;    }</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;  }</div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;}</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160; </div>
+<div class="line"><a name="l00030"></a><span class="lineno"><a class="line" href="classfractal_1_1_fractal.html#a19e18dde666cf623f2635962ea77222d">   30</a></span>&#160;uint8_t <a class="code" href="classfractal_1_1_fractal.html#a19e18dde666cf623f2635962ea77222d">Fractal::countInterations</a>(<a class="code" href="classfractal_1_1math_1_1_complex.html">math::Complex</a> seed) {</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;  uint8_t count = 0;</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;  <a class="code" href="classfractal_1_1math_1_1_complex.html">math::Complex</a> value(0, 0);</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;  <span class="keywordflow">while</span> (count &lt; <a class="code" href="classfractal_1_1_fractal.html#a3dcd3304162fede523ab513a8115150c">MAX_ITR</a> &amp;&amp; value.<a class="code" href="classfractal_1_1math_1_1_complex.html#ad376a61369ca54862cb09c7af16a9cd4">getMagnitude</a>() &lt; 1.0) {</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    value = value * value + seed;</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;    ++count;</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;  }</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;  <span class="keywordflow">return</span> count;</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;}</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160; </div>
+<div class="line"><a name="l00045"></a><span class="lineno"><a class="line" href="classfractal_1_1_fractal.html#a3c4e9c73e3e60b3b87a296e04e9a937d">   45</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="classfractal_1_1_fractal.html#a3c4e9c73e3e60b3b87a296e04e9a937d">Fractal::print</a>() {</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;  <span class="comment">// NOLINTNEXTLINE (cppcoreguidelines-avoid-magic-numbers)</span></div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;  spdlog::info(<span class="stringliteral">&quot;libraryAdd: 10 + 3 = {}&quot;</span>, <a class="code" href="library_8h.html#ab67e6057081171685472066be5ecc8c2">libraryAdd</a>(10, 3));</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;  <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> y = 0; y &lt; <a class="code" href="classfractal_1_1_fractal.html#a37ffb3832862fba1672e23aa5e2a363b">SIZE</a>; ++y) {</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    std::array&lt;char, SIZE + 1&gt; buf{<span class="stringliteral">&quot;&quot;</span>};</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    buf.at(<a class="code" href="classfractal_1_1_fractal.html#a37ffb3832862fba1672e23aa5e2a363b">SIZE</a>) = <span class="charliteral">&#39;\0&#39;</span>;</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> x = 0; x &lt; <a class="code" href="classfractal_1_1_fractal.html#a37ffb3832862fba1672e23aa5e2a363b">SIZE</a>; ++x) {</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;      <span class="comment">// Fractal is -1.5 to 1.5</span></div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;      <span class="comment">// NOLINTNEXTLINE (bug-prone-narrowing-conversions)</span></div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;      buf.at(x) = <span class="keyword">static_cast&lt;</span><span class="keywordtype">char</span><span class="keyword">&gt;</span>((<a class="code" href="namespacefractal.html">fractal</a>.at(y).at(x) &gt;&gt; uint8_t{5}) + <span class="charliteral">&#39;0&#39;</span>);</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    }</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    spdlog::info(buf.data());</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;  }</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;}</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160; </div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;}  <span class="comment">// namespace fractal</span></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
-<div class="ttc" id="aclassfractal_1_1_fractal_html_a19e18dde666cf623f2635962ea77222d"><div class="ttname"><a href="classfractal_1_1_fractal.html#a19e18dde666cf623f2635962ea77222d">fractal::Fractal::countInterations</a></div><div class="ttdeci">uint8_t countInterations(math::Complex seed)</div><div class="ttdoc">Count the number of iteration required for a seed to diverge.</div><div class="ttdef"><b>Definition:</b> <a href="fractal_8cpp_source.html#l00029">fractal.cpp:29</a></div></div>
-<div class="ttc" id="aclassfractal_1_1_fractal_html_a3c4e9c73e3e60b3b87a296e04e9a937d"><div class="ttname"><a href="classfractal_1_1_fractal.html#a3c4e9c73e3e60b3b87a296e04e9a937d">fractal::Fractal::print</a></div><div class="ttdeci">void print()</div><div class="ttdoc">Print the fractal to the screen.</div><div class="ttdef"><b>Definition:</b> <a href="fractal_8cpp_source.html#l00044">fractal.cpp:44</a></div></div>
+<div class="ttc" id="aclassfractal_1_1_fractal_html_a19e18dde666cf623f2635962ea77222d"><div class="ttname"><a href="classfractal_1_1_fractal.html#a19e18dde666cf623f2635962ea77222d">fractal::Fractal::countInterations</a></div><div class="ttdeci">uint8_t countInterations(math::Complex seed)</div><div class="ttdoc">Count the number of iteration required for a seed to diverge.</div><div class="ttdef"><b>Definition:</b> <a href="fractal_8cpp_source.html#l00030">fractal.cpp:30</a></div></div>
+<div class="ttc" id="aclassfractal_1_1_fractal_html_a3c4e9c73e3e60b3b87a296e04e9a937d"><div class="ttname"><a href="classfractal_1_1_fractal.html#a3c4e9c73e3e60b3b87a296e04e9a937d">fractal::Fractal::print</a></div><div class="ttdeci">void print()</div><div class="ttdoc">Print the fractal to the screen.</div><div class="ttdef"><b>Definition:</b> <a href="fractal_8cpp_source.html#l00045">fractal.cpp:45</a></div></div>
 <div class="ttc" id="aclassfractal_1_1math_1_1_complex_html"><div class="ttname"><a href="classfractal_1_1math_1_1_complex.html">fractal::math::Complex</a></div><div class="ttdoc">Complex number class with real and imaginary components.</div><div class="ttdef"><b>Definition:</b> <a href="complex_8hpp_source.html#l00015">complex.hpp:15</a></div></div>
 <div class="ttc" id="alogging_8hpp_html"><div class="ttname"><a href="logging_8hpp.html">logging.hpp</a></div></div>
 <div class="ttc" id="afractal_8hpp_html"><div class="ttname"><a href="fractal_8hpp.html">fractal.hpp</a></div></div>
+<div class="ttc" id="alibrary_8h_html"><div class="ttname"><a href="library_8h.html">library.h</a></div></div>
 <div class="ttc" id="aclassfractal_1_1_fractal_html_a3dcd3304162fede523ab513a8115150c"><div class="ttname"><a href="classfractal_1_1_fractal.html#a3dcd3304162fede523ab513a8115150c">fractal::Fractal::MAX_ITR</a></div><div class="ttdeci">static constexpr uint8_t MAX_ITR</div><div class="ttdoc">Maximum iterations to converge.</div><div class="ttdef"><b>Definition:</b> <a href="fractal_8hpp_source.html#l00029">fractal.hpp:29</a></div></div>
-<div class="ttc" id="aclassfractal_1_1_fractal_html_a9cf2cdb7929f41134415b2265913956d"><div class="ttname"><a href="classfractal_1_1_fractal.html#a9cf2cdb7929f41134415b2265913956d">fractal::Fractal::Fractal</a></div><div class="ttdeci">Fractal()</div><div class="ttdoc">Construct a new Fractal object.</div><div class="ttdef"><b>Definition:</b> <a href="fractal_8cpp_source.html#l00011">fractal.cpp:11</a></div></div>
+<div class="ttc" id="aclassfractal_1_1_fractal_html_a9cf2cdb7929f41134415b2265913956d"><div class="ttname"><a href="classfractal_1_1_fractal.html#a9cf2cdb7929f41134415b2265913956d">fractal::Fractal::Fractal</a></div><div class="ttdeci">Fractal()</div><div class="ttdoc">Construct a new Fractal object.</div><div class="ttdef"><b>Definition:</b> <a href="fractal_8cpp_source.html#l00012">fractal.cpp:12</a></div></div>
 <div class="ttc" id="aclassfractal_1_1_fractal_html_a37ffb3832862fba1672e23aa5e2a363b"><div class="ttname"><a href="classfractal_1_1_fractal.html#a37ffb3832862fba1672e23aa5e2a363b">fractal::Fractal::SIZE</a></div><div class="ttdeci">static constexpr size_t SIZE</div><div class="ttdoc">Number of grid points.</div><div class="ttdef"><b>Definition:</b> <a href="fractal_8hpp_source.html#l00027">fractal.hpp:27</a></div></div>
 <div class="ttc" id="aclassfractal_1_1math_1_1_complex_html_ad376a61369ca54862cb09c7af16a9cd4"><div class="ttname"><a href="classfractal_1_1math_1_1_complex.html#ad376a61369ca54862cb09c7af16a9cd4">fractal::math::Complex::getMagnitude</a></div><div class="ttdeci">double getMagnitude() const</div><div class="ttdoc">Get the magnitude of the complex number.</div><div class="ttdef"><b>Definition:</b> <a href="complex_8cpp_source.html#l00039">complex.cpp:39</a></div></div>
-<div class="ttc" id="anamespacefractal_html"><div class="ttname"><a href="namespacefractal.html">fractal</a></div><div class="ttdef"><b>Definition:</b> <a href="fractal_8cpp_source.html#l00005">fractal.cpp:5</a></div></div>
+<div class="ttc" id="anamespacefractal_html"><div class="ttname"><a href="namespacefractal.html">fractal</a></div><div class="ttdef"><b>Definition:</b> <a href="fractal_8cpp_source.html#l00006">fractal.cpp:6</a></div></div>
 <div class="ttc" id="aclassfractal_1_1_fractal_html_a6ad2ccf300547063e1dccd687faaf31b"><div class="ttname"><a href="classfractal_1_1_fractal.html#a6ad2ccf300547063e1dccd687faaf31b">fractal::Fractal::VIEW_MAX</a></div><div class="ttdeci">static constexpr double VIEW_MAX</div><div class="ttdoc">Bounds of grid coordinates.</div><div class="ttdef"><b>Definition:</b> <a href="fractal_8hpp_source.html#l00028">fractal.hpp:28</a></div></div>
+<div class="ttc" id="alibrary_8h_html_ab67e6057081171685472066be5ecc8c2"><div class="ttname"><a href="library_8h.html#ab67e6057081171685472066be5ecc8c2">libraryAdd</a></div><div class="ttdeci">uint32_t LIBRARY_API libraryAdd(uint32_t a, uint32_t b)</div><div class="ttdoc">Add two numbers using the library.</div><div class="ttdef"><b>Definition:</b> <a href="library_8cpp_source.html#l00003">library.cpp:3</a></div></div>
 <!-- HTML footer for doxygen 1.8.17-->
 <!-- start footer part -->
 <div id="nav-path" class="navpath">
