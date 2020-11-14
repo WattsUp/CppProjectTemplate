@@ -166,9 +166,15 @@ foreach(INDEX RANGE ${TARGETS_LENGTH})
     $<$<CXX_COMPILER_ID:MSVC>:/WX>
     $<$<CXX_COMPILER_ID:MSVC>:/W4>)
 
-  add_custom_command(TARGET ${TARGET} PRE_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-      "${CMAKE_SOURCE_DIR}/res/" "$<TARGET_FILE_DIR:${TARGET}>/res")
+  if (WIN32)
+    add_custom_command(TARGET ${TARGET} PRE_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_SOURCE_DIR}/res/" "$<TARGET_FILE_DIR:${TARGET}>/res")
+  else()
+    add_custom_command(TARGET ${TARGET} PRE_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_SOURCE_DIR}/res/" "$<TARGET_FILE_DIR:${TARGET}>/${PROJECT_NAME}/res")
+  endif()
 
 endforeach()
 
@@ -223,11 +229,15 @@ foreach(TARGET ${TARGETS_DIST})
     install(TARGETS ${TARGET}
             RUNTIME DESTINATION bin
             LIBRARY DESTINATION lib
-            ARCHIVE DESTINATION lib/static)
+            ARCHIVE DESTINATION lib)
   endif()
 endforeach()
 
-install(DIRECTORY "res" DESTINATION .)
+if (WIN32)
+  install(DIRECTORY "res" DESTINATION .)
+else()
+  install(DIRECTORY "res" DESTINATION "bin/${PROJECT_NAME}")
+endif()
 
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A template repository for C++ projects")
 set(CPACK_PACKAGE_VENDOR "Bradley Davis")
