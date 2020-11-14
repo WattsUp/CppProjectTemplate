@@ -1,6 +1,7 @@
 #include "fractal.hpp"
 
 #include "common/logging.hpp"
+#include "library/library.h"
 
 namespace fractal {
 
@@ -42,6 +43,8 @@ uint8_t Fractal::countInterations(math::Complex seed) {
  *
  */
 void Fractal::print() {
+  // NOLINTNEXTLINE (cppcoreguidelines-avoid-magic-numbers)
+  spdlog::info("libraryAdd: 10 + 3 = {}", libraryAdd(10, 3));
   for (size_t y = 0; y < SIZE; ++y) {
     std::array<char, SIZE + 1> buf{""};
     buf.at(SIZE) = '\0';

@@ -25,13 +25,24 @@ def getConfig():
   more = True
   while more:
     name = input("----\nEnter target name: ").lower().strip().replace(" ", "-")
+    library = input(
+        "Is {} a library? (Y/n) (no for executable): ".format(name)).lower().strip() == "y"
+
     windowsOnly = input("Will {} be Windows only? (Y/n): ".format(name)
                         ).lower().strip() == "y"
     if windowsOnly:
       name += "-win"
-    winMain = input(
-        "Will {} be use WinMain? (Y/n): ".format(name)).lower().strip() == "y"
-    targets.append([name, windowsOnly, winMain])
+
+    if library:
+      winMain = False
+    else:
+      winMain = input(
+          "Will {} be use WinMain? (Y/n): ".format(name)).lower().strip() == "y"
+    targets.append({
+      "name": name,
+      "library": library,
+      "windowsOnly": windowsOnly,
+      "winMain": winMain})
     more = input(
       "Do you have more targets to add? (Y/n): ").lower().strip() == "y"
   return (projectName, targets)
@@ -53,13 +64,16 @@ def writeTopCMakeList(config):
   subdirectories = "# Add each target subdirectory\n"
   for target in config[1]:
     # Name (-win for windows only)
-    targetList += "  \"{}\"\n".format(target[0])
-    if target[2]:  # Using WinMain for Windows configuration
+    targetList += "  \"{}\"\n".format(target["name"])
+    if target["library"]:
+      targetConfigList += "  \"library\""
+    elif target["winMain"]:  # Using WinMain for Windows configuration
       targetConfigList += "  \"WinMain\""
     else:
       targetConfigList += "  \"default\""
-    targetConfigList += " # {}\n".format(target[0])
-    subdirectories += "add_subdirectory(\"project-{}\")\n".format(target[0])
+    targetConfigList += " # {}\n".format(target["name"])
+    subdirectories += "add_subdirectory(\"project-{}\")\n".format(
+      target["name"])
   targetList += ")"
   targetConfigList += ")"
 
@@ -87,20 +101,30 @@ def createTargets(config):
   for f in os.listdir("."):
     if re.match(r"project-.*", f):
       shutil.rmtree(f, ignore_errors=True)
+  for f in os.listdir("include"):
+    f = os.path.join("include", f)
+    if os.path.isdir(f):
+      shutil.rmtree(f, ignore_errors=True)
 
   for target in config[1]:
-    folder = "project-" + target[0]
+    folder = "project-" + target["name"]
     os.mkdir(folder)
 
     with open("tools/templates/CMakeLists.txt", "r", newline="\n") as file:
       data = file.read()
       file.close()
-    data = re.sub(r"TARGET", target[0], data)
-    if target[1]:  # windowsOnly
+    data = re.sub(r"TARGET", target["name"], data)
+    if target["windowsOnly"]:
       data = re.sub(r"set \(SRCS_.*?\)\n\n", "", data, flags=re.S | re.M)
       data = re.sub(r"(target_sources\(.*?) \$<.*?.\)", r"\1)", data)
     else:
-      if target[2]:  # winMain
+      if target["library"]:
+        data = re.sub(
+            r"  \"main\.cpp\"\n",
+            f"  \"" + target["name"] + ".cpp\"\n",
+            data)
+        data = re.sub(r"  \"main_.*\.cpp\"\n", "", data)
+      elif target["winMain"]:
         data = re.sub(r"  \"main\.cpp\"\n", "", data)
       else:
         data = re.sub(r"  \"main_.*\.cpp\"\n", "", data)
@@ -111,15 +135,38 @@ def createTargets(config):
       file.close()
     print("Created", path)
 
-    if target[1]:  # windowsOnly
+    if target["library"]:
+      path = os.path.join(folder, target["name"] + ".cpp")
+      with open("tools/templates/library.cpp", "r", newline="\n") as file:
+        data = file.read()
+        file.close()
+      data = re.sub(r"library", target["name"], data)
+      with open(path, "w", newline="\n") as file:
+        file.write(data)
+        file.close()
+      print("Created", path)
+
+      folder = os.path.join("include", target["name"])
+      os.mkdir(folder)
+      path = os.path.join(folder, target["name"] + ".h")
+      with open("tools/templates/library.h", "r", newline="\n") as file:
+        data = file.read()
+        file.close()
+      data = re.sub(r"LIBRARY_", target["name"].upper() + "_", data)
+      data = re.sub(r"(the )*library", target["name"], data)
+      with open(path, "w", newline="\n") as file:
+        file.write(data)
+        file.close()
+      print("Created", path)
+    elif target["windowsOnly"]:
       path = os.path.join(folder, "main.cpp")
-      if target[2]:  # winMain
+      if target["winMain"]:
         shutil.copy("tools/templates/main_win.cpp", path)
       else:
         shutil.copy("tools/templates/main_unix.cpp", path)
-        print("Created", path)
+      print("Created", path)
     else:
-      if (target[2]):  # winMain
+      if target["winMain"]:
         path = os.path.join(folder, "main_unix.cpp")
         shutil.copy("tools/templates/main_unix.cpp", path)
         print("Created", path)
@@ -143,20 +190,22 @@ def resetGit(git):
     print("Created new git repository")
 
     # Get list of previous submodules and add them to the fresh repository
-    cmd = [git, "config", "-f", ".gitmodules",
-           "--get-regexp", "^submodule\\..*\\.path$"]
-    submodules = subprocess.check_output(cmd, universal_newlines=True).strip()
+    if os.path.exists(".gitmodules"):
+      cmd = [git, "config", "-f", ".gitmodules",
+             "--get-regexp", "^submodule\\..*\\.path$"]
+      submodules = subprocess.check_output(
+        cmd, universal_newlines=True).strip()
 
-    for submodule in submodules.split("\n"):
-      # Get the URL and local path of each submodule
-      matches = re.search(r"^(submodule\..*\.)path (.*)$", submodule)
-      path = matches[2]
-      cmd = [git, "config", "-f", ".gitmodules", "--get", matches[1] + "url"]
-      url = subprocess.check_output(cmd, universal_newlines=True).strip()
+      for submodule in submodules.split("\n"):
+        # Get the URL and local path of each submodule
+        matches = re.search(r"^(submodule\..*\.)path (.*)$", submodule)
+        path = matches[2]
+        cmd = [git, "config", "-f", ".gitmodules", "--get", matches[1] + "url"]
+        url = subprocess.check_output(cmd, universal_newlines=True).strip()
 
-      shutil.rmtree(path, ignore_errors=True)
-      Template.call([git, "submodule", "add", url, path])
-      print("Added {} to {}".format(url, path))
+        shutil.rmtree(path, ignore_errors=True)
+        Template.call([git, "submodule", "add", url, path])
+        print("Added {} to {}".format(url, path))
 
     Template.call([git, "add", "."])
 
@@ -271,15 +320,18 @@ def main():
   print("----- Configuration -----")
   print("Project Name: \"{}\"".format(config[0]))
   for target in config[1]:
-    message = "Target: \"{}\"".format(target[0])
-    if target[1]:
+    message = "Target: \"{}\"".format(target["name"])
+    if target["library"]:
+      message += ", library"
+    elif target["winMain"]:
+      message += ", executable using WinMain() for Windows"
+    else:
+      message += ", executable using int main()"
+
+    if target["windowsOnly"]:
       message += ", Windows only"
     else:
       message += ", Windows & UNIX"
-    if target[2]:
-      message += ", using WinMain() for Windows"
-    else:
-      message += ", using int main()"
     print(message)
 
   print("----- Step 3: Edit Top CMakeList -----")
@@ -318,7 +370,7 @@ def main():
     print("Previously completed")
 
   progress.complete()
-  print("Make sure to push with 'git   push --tags'")
+  print("Make sure to push with 'git push --tags'")
 
 
 if __name__ == "__main__":

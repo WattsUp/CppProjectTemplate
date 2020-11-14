@@ -123,7 +123,7 @@ def makeAbsolute(f, directory):
 #  @return absolute path of file
 def findInParent(file, directory):
   while not os.path.isfile(os.path.join(directory, file)):
-    if os.path.normpath(directory) == "/":
+    if os.path.dirname(os.path.realpath(directory)) == os.path.realpath(directory):
       print("Error: could not file:", file)
       sys.exit(1)
     directory += "../"
