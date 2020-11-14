@@ -13,7 +13,7 @@ target_link_libraries("test" PRIVATE GTest::gtest)
 foreach(target ${TARGETS})
   target_include_directories(${target} SYSTEM PRIVATE ${LIBRARY_INCLUDES})
   target_link_libraries(${target} PRIVATE spdlog::spdlog_header_only)
-  if(NOT BUILD_SHARED_LIBS OR ${target} STREQUAL "installer-win")
+  if (WIN32 AND (NOT BUILD_SHARED_LIBS OR ${target} STREQUAL "installer-win"))
     # Self extracting Windows installer always use static linking
     target_link_libraries(${target} PRIVATE fmt::fmt-header-only)
   endif()

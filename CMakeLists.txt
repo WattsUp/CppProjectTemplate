@@ -122,7 +122,6 @@ foreach(INDEX RANGE ${TARGETS_LENGTH})
     endif()
 
     get_target_property(TYPE ${TARGET} TYPE)
-    message(${TYPE})
     if(${TYPE} MATCHES "^SHARED_LIBRARY")
       # Get #define compatible target name
       string(TOUPPER ${TARGET} TARGET_DEFINE)
