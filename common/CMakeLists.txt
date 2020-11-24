@@ -12,3 +12,4 @@ set (TEST_SRCS
 )
 
 target_sources("gtester" PRIVATE ${TEST_SRCS})
+target_link_libraries("gtester" PRIVATE "library")
