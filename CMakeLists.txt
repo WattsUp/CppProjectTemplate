@@ -55,14 +55,16 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/output/release-$
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/output/debug-${ARCHITECTURE}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/output/release-${ARCHITECTURE}")
 
+include(CTest)
+
 # Targets not included in the public distributable
 set (TARGETS_NODIST
-  "test"          # Unit tester common to all projects
+  "gtester"       # Unit tester common to all projects
   "installer-win" # Windows self-extracting installer
 )
 
 set (TARGETS_NODISTCONFIG
-  "default" # test
+  "default" # gtester
   "default" # installer-win
 )
 
@@ -178,9 +180,7 @@ foreach(INDEX RANGE ${TARGETS_LENGTH})
 
 endforeach()
 
-foreach(TARGET ${TARGETS_NODIST})
-  set_target_properties(${TARGET} PROPERTIES EXCLUDE_FROM_ALL ON)
-endforeach()
+set_target_properties("installer-win" PROPERTIES EXCLUDE_FROM_ALL ON)
 
 # Force rebuild of installer-win every time
 # Due to resource file updates not noticed
@@ -289,3 +289,5 @@ add_subdirectory("installer-win")
 # Add each target subdirectory
 add_subdirectory("project-fractal")
 add_subdirectory("project-library")
+
+add_test(NAME gtest COMMAND "gtester")

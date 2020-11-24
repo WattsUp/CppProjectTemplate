@@ -11,4 +11,4 @@ set (TEST_SRCS
   "logging_test.cpp"
 )
 
-target_sources("test" PRIVATE ${TEST_SRCS})
+target_sources("gtester" PRIVATE ${TEST_SRCS})

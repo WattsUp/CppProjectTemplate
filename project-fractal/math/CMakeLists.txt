@@ -9,4 +9,4 @@ set (TEST_SRCS
   "complex_test.cpp"
 )
 
-target_sources("test" PRIVATE ${TEST_SRCS} ${SRCS})
+target_sources("gtester" PRIVATE ${TEST_SRCS} ${SRCS})

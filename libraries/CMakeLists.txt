@@ -8,7 +8,7 @@ find_package(spdlog CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 
 find_package(GTest CONFIG REQUIRED)
-target_link_libraries("test" PRIVATE GTest::gtest)
+target_link_libraries("gtester" PRIVATE GTest::gtest)
 
 foreach(target ${TARGETS})
   target_include_directories(${target} SYSTEM PRIVATE ${LIBRARY_INCLUDES})
