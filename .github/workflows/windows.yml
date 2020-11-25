@@ -33,7 +33,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: build
-          key: ${{ matrix.os }}-${{ matrix.EVENT_MATRIX }}-v4
+          key: ${{ matrix.os }}-${{ matrix.EVENT_MATRIX }}-v1
 
       - name: Install ninja-build tool
         uses: seanmiddleditch/gha-setup-ninja@v3

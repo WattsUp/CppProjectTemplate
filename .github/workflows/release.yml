@@ -1,0 +1,68 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  doxygen:
+    runs-on: ubuntu-20.04
+    if: "!contains(github.event.head_commit.message, 'ci skip')"
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Checkout gh-pages
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          ref: gh-pages
+          path: docs/www
+
+      - name: Cache Build
+        uses: actions/cache@v2
+        with:
+          path: build
+          key: doxygen-v1
+
+      - name: Install ninja-build tool
+        uses: seanmiddleditch/gha-setup-ninja@v3
+        with:
+          destination: ${{ runner.workspace }}/ninja
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libspdlog-dev libgtest-dev libfmt-dev doxygen graphviz
+          cd /usr/src/googletest
+          sudo cmake .
+          sudo cmake --build . --target install
+
+      - name: Build
+        shell: bash
+        run: |
+          mkdir -p build
+          cd build
+
+          CMAKE_CMD="cmake -G Ninja .."
+          (echo "[cmake configure] $CMAKE_CMD" && $CMAKE_CMD) || (echo "[cmake configure retry]" && rm -rf * && $CMAKE_CMD)
+
+          cmake --build . --target doc
+
+      - name: Commit
+        shell: bash
+        run: |
+          cd docs/www
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add .
+          git commit -m "Generated Doxygen documentation for release ${{ github.event.release.tag_name }}"
+          git push
+
+      - uses: actions/upload-artifact@v1
+        if: failure()
+        with:
+          name: doxygen
+          path: .
