@@ -217,25 +217,31 @@ endif()
 
 set(EXES "")
 
-foreach(TARGET ${TARGETS_DIST})
-  if (WIN32)
-    install(TARGETS ${TARGET}
-            RUNTIME DESTINATION .
-            LIBRARY DESTINATION lib
-            ARCHIVE DESTINATION .)
-    set(EXE $<TARGET_FILE:${TARGET}>)
-    list(APPEND EXES ${EXE})
-  else()
-    install(TARGETS ${TARGET}
-            RUNTIME DESTINATION bin
-            LIBRARY DESTINATION lib
-            ARCHIVE DESTINATION lib)
-  endif()
-endforeach()
 
 if (WIN32)
+  list(LENGTH TARGETS_DISTCONFIG TARGETS_DIST_LENGTH)
+  math(EXPR TARGETS_DIST_LENGTH "${TARGETS_DIST_LENGTH} - 1")
+  foreach(INDEX RANGE ${TARGETS_DIST_LENGTH})
+    list(GET TARGETS_DIST ${INDEX} TARGET)
+    list(GET TARGETS_DISTCONFIG ${INDEX} CONFIG)
+    if (${CONFIG} MATCHES "^library$" OR ${CONFIG} MATCHES "^SHARED$" OR ${CONFIG} MATCHES "^STATIC$")
+      message("Not installing library target on Windows")
+    else()
+      install(TARGETS ${TARGET}
+              RUNTIME DESTINATION .
+              LIBRARY DESTINATION lib
+              ARCHIVE DESTINATION .)
+      set(EXE $<TARGET_FILE:${TARGET}>)
+      list(APPEND EXES ${EXE})
+    endif()
+  endforeach()
+
   install(DIRECTORY "res" DESTINATION .)
 else()
+  install(TARGETS ${TARGETS_DIST}
+          RUNTIME DESTINATION bin
+          LIBRARY DESTINATION lib
+          ARCHIVE DESTINATION lib)
   install(DIRECTORY "res" DESTINATION "bin/${PROJECT_NAME}")
 endif()
 
@@ -259,22 +265,28 @@ endif()
 include(CPack)
 
 if (WIN32)
+  if(${ARCHITECTURE} STREQUAL "x64")
+    set(CPACK_ARCHIVE "${CPACK_PACKAGE_DIRECTORY}/_CPack_Packages/win64/ZIP/archive")
+  else()
+    set(CPACK_ARCHIVE "${CPACK_PACKAGE_DIRECTORY}/_CPack_Packages/win32/ZIP/archive")
+  endif()
   install(CODE
     "file(GET_RUNTIME_DEPENDENCIES
-            RESOLVED_DEPENDENCIES_VAR resolved_deps
-            UNRESOLVED_DEPENDENCIES_VAR unresolved_deps
-            EXECUTABLES ${EXES}
-            PRE_EXCLUDE_REGEXES \"api-ms.*\"
-            POST_INCLUDE_REGEXES \"${CMAKE_SOURCE_DIR}.*\"
-            POST_EXCLUDE_REGEXES \".*\"
-            )
-    file(COPY \${resolved_deps} DESTINATION \"${CPACK_PACKAGE_DIRECTORY}/_CPack_Packages/win32/ZIP/archive\")
+          RESOLVED_DEPENDENCIES_VAR resolved_deps
+          UNRESOLVED_DEPENDENCIES_VAR unresolved_deps
+          EXECUTABLES ${EXES}
+          PRE_EXCLUDE_REGEXES \"api-ms.*\"
+          POST_INCLUDE_REGEXES \"${CMAKE_SOURCE_DIR}.*\"
+          POST_EXCLUDE_REGEXES \".*\"
+          )
+    file(COPY \${resolved_deps} DESTINATION \"${CPACK_ARCHIVE}\")
     file(INSTALL \${resolved_deps} DESTINATION \"${CMAKE_INSTALL_PREFIX}\")"
   )
 endif()
 
 # CMake targets cannot have spaces, to have spaces in the output use the OUTPUT_NAME property
 set_target_properties("installer-win" PROPERTIES OUTPUT_NAME "${PROJECT_NAME}-installer")
+file(GENERATE OUTPUT "installerLocation.txt" CONTENT "$<TARGET_FILE:installer-win>")
 
 # Add libraries first to setup library include directives
 add_subdirectory("libraries")
