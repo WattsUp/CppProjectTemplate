@@ -13,7 +13,7 @@ on:
       - "**.md"
 
 jobs:
-  vcpkg:
+  ubuntu-18:
     runs-on: ${{ matrix.os }}
     if: "!contains(github.event.head_commit.message, 'ci skip')"
     strategy:
@@ -78,7 +78,7 @@ jobs:
           name: ${{ matrix.os }}-${{ matrix.EVENT_MATRIX }}
           path: .
 
-  cmake:
+  ubuntu-20:
     runs-on: ${{ matrix.os }}
     if: "!contains(github.event.head_commit.message, 'ci skip')"
     strategy:

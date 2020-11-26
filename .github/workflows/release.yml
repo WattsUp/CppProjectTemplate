@@ -7,7 +7,6 @@ on:
 jobs:
   doxygen:
     runs-on: ubuntu-20.04
-    if: "!contains(github.event.head_commit.message, 'ci skip')"
 
     steps:
       - uses: actions/checkout@v2
@@ -65,4 +64,182 @@ jobs:
         if: failure()
         with:
           name: doxygen
+          path: .
+
+  windows-release-x64:
+    runs-on: windows-2019
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Install ninja-build tool
+        uses: seanmiddleditch/gha-setup-ninja@v3
+        with:
+          destination: ${{ runner.workspace }}/ninja
+
+      - name: Add msbuild to PATH
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Prepare vcpkg
+        uses: lukka/run-vcpkg@v5
+        id: runvcpkg
+        with:
+          vcpkgArguments: spdlog:x64-windows gtest:x64-windows
+          vcpkgDirectory: ${{ runner.workspace }}/vcpkg/
+          vcpkgGitCommitId: 8e76503a769e153dad8f4e7b2c95a152bb35edaa
+          vcpkgTriplet: x64-windows
+
+      - name: Build Installer
+        shell: powershell
+        run: |
+          $EVENT_BUILD_PARALLEL=10
+          $EVENT_CMAKE_CONFIG="Release"
+          $EVENT_CMAKE_OPTIONS="-DCMAKE_BUILD_TYPE:STRING=Release -DBUILD_SHARED_LIBS=ON"
+
+          mkdir build -ea 0
+          cd build
+
+          $CMAKE_CMD="cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=${{ runner.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake $EVENT_CMAKE_OPTIONS .."
+          function cmake_configure($retry) {
+            $errcode=0
+            try {
+              if ($retry -eq 0) {
+                echo "[cmake configure retry] $CMAKE_CMD"
+              } else {
+                echo "[cmake configure] $CMAKE_CMD"
+              }
+              Invoke-Expression $CMAKE_CMD
+              $errcode=$LastExitCode
+            } catch {
+              $errcode=1
+            } finally {
+              if ($errcode -ne 0) {
+                if ($retry -eq 0) {
+                  $host.SetShouldExit($LastExitCode)
+                } else {
+                  echo "Remove all entries in build directory"
+                  rm -r -fo *
+                  cmake_configure 0
+                }
+              }
+            }
+          }
+          cmake_configure 1
+
+          try {
+            cmake --build . --config $EVENT_CMAKE_CONFIG --target installer-win -- -j $EVENT_BUILD_PARALLEL
+            if ($LastExitCode -ne 0) { $host.SetShouldExit($LastExitCode) }
+          } catch {
+            $host.SetShouldExit($LastExitCode)
+          }
+          cd ..
+
+          $installer = Get-Content .\build\installerLocation.txt -Raw
+          cp "$installer" output\installer.exe
+
+      - name: Upload Windows x64 installer
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: output\installer.exe
+          asset_name: ${{ github.event.repository.name }}Setup-${{ github.event.release.tag_name }}-x64.exe
+          tag: ${{ github.ref }}
+
+      - uses: actions/upload-artifact@v1
+        if: failure()
+        with:
+          name: windows-release-x64
+          path: .
+
+  windows-release-x86:
+    runs-on: windows-2019
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Install ninja-build tool
+        uses: seanmiddleditch/gha-setup-ninja@v3
+        with:
+          destination: ${{ runner.workspace }}/ninja
+
+      - name: Add msbuild to PATH
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x86
+
+      - name: Prepare vcpkg
+        uses: lukka/run-vcpkg@v5
+        id: runvcpkg
+        with:
+          vcpkgArguments: spdlog:x86-windows gtest:x86-windows
+          vcpkgDirectory: ${{ runner.workspace }}/vcpkg/
+          vcpkgGitCommitId: 8e76503a769e153dad8f4e7b2c95a152bb35edaa
+          vcpkgTriplet: x86-windows
+
+      - name: Build Installer
+        shell: powershell
+        run: |
+          $EVENT_BUILD_PARALLEL=10
+          $EVENT_CMAKE_CONFIG="Release"
+          $EVENT_CMAKE_OPTIONS="-DCMAKE_BUILD_TYPE:STRING=Release -DBUILD_SHARED_LIBS=ON"
+
+          mkdir build -ea 0
+          cd build
+
+          $CMAKE_CMD="cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=${{ runner.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake $EVENT_CMAKE_OPTIONS .."
+          function cmake_configure($retry) {
+            $errcode=0
+            try {
+              if ($retry -eq 0) {
+                echo "[cmake configure retry] $CMAKE_CMD"
+              } else {
+                echo "[cmake configure] $CMAKE_CMD"
+              }
+              Invoke-Expression $CMAKE_CMD
+              $errcode=$LastExitCode
+            } catch {
+              $errcode=1
+            } finally {
+              if ($errcode -ne 0) {
+                if ($retry -eq 0) {
+                  $host.SetShouldExit($LastExitCode)
+                } else {
+                  echo "Remove all entries in build directory"
+                  rm -r -fo *
+                  cmake_configure 0
+                }
+              }
+            }
+          }
+          cmake_configure 1
+
+          try {
+            cmake --build . --config $EVENT_CMAKE_CONFIG --target installer-win -- -j $EVENT_BUILD_PARALLEL
+            if ($LastExitCode -ne 0) { $host.SetShouldExit($LastExitCode) }
+          } catch {
+            $host.SetShouldExit($LastExitCode)
+          }
+          cd ..
+
+          $installer = Get-Content .\build\installerLocation.txt -Raw
+          cp "$installer" output\installer.exe
+
+      - name: Upload Windows x86 installer
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: output\installer.exe
+          asset_name: ${{ github.event.repository.name }}Setup-${{ github.event.release.tag_name }}-x86.exe
+          tag: ${{ github.ref }}
+
+      - uses: actions/upload-artifact@v1
+        if: failure()
+        with:
+          name: windows-release-x86
           path: .

@@ -37,6 +37,8 @@ jobs:
 
       - name: Install ninja-build tool
         uses: seanmiddleditch/gha-setup-ninja@v3
+        with:
+          destination: ${{ runner.workspace }}/ninja
 
       - name: Add msbuild to PATH
         uses: ilammy/msvc-dev-cmd@v1
@@ -135,6 +137,8 @@ jobs:
 
       - name: Install ninja-build tool
         uses: seanmiddleditch/gha-setup-ninja@v3
+        with:
+          destination: ${{ runner.workspace }}/ninja
 
       - name: Add msbuild to PATH
         uses: ilammy/msvc-dev-cmd@v1
