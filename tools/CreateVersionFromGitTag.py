@@ -46,11 +46,15 @@ def main():
                       help="path to git binary")
   parser.add_argument("--output", metavar="PATH",
                       help="output file to write version info, default stdout")
+  parser.add_argument("--output-str", metavar="FORMAT",
+                      help="output version to stdout using the format: %%M major, %%m minor, %%p patch, %%t tweak, %%a ahead, %%~ modified, %%s SHA")
   parser.add_argument("--quiet", action="store_true", default=False,
                       help="only output return codes and errors")
 
   argv = sys.argv[1:]
   args = parser.parse_args(argv)
+  if args.output_str:
+    args.quiet = True
 
   Template.checkInstallations(
       git=args.git,
@@ -93,6 +97,20 @@ const constexpr char* VERSION_GIT_SHA     = "{version.gitSHA}";
 
   if args.output:
     Template.overwriteIfChanged(args.output, data, args.quiet)
+  elif args.output_str:
+    buf = args.output_str
+
+    buf = re.sub(r"%M", f"{version.major}", buf)
+    buf = re.sub(r"%m", f"{version.minor}", buf)
+    buf = re.sub(r"%p", f"{version.patch}", buf)
+    buf = re.sub(r"%t", f"{version.tweak}", buf)
+    buf = re.sub(r"%a", f"{version.ahead}", buf)
+    if version.modified:
+      buf = re.sub(r"%~", "~", buf)
+    else:
+      buf = re.sub(r"%~", "", buf)
+    buf = re.sub(r"%s", f"{version.gitSHA}", buf)
+    print(buf)
   else:
     print(data)
 

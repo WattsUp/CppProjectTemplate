@@ -11,7 +11,18 @@ if(WIN32 AND NOT CMAKE_TOOLCHAIN_FILE)
   message(FATAL_ERROR "CMAKE_TOOLCHAIN_FILE must be set, see vcpkg integrate install")
 endif()
 
-project("project-template" DESCRIPTION "A template repository for C++ projects")
+# Set project version from git tag
+find_package(Python3 COMPONENTS Interpreter)
+execute_process(
+  COMMAND "${Python3_EXECUTABLE}"
+    "${CMAKE_SOURCE_DIR}/tools/CreateVersionFromGitTag.py"
+    --output-str "%M.%m.%p"
+    --quiet
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  OUTPUT_VARIABLE VERSION_RAW
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+project("project-template" DESCRIPTION "A template repository for C++ projects" VERSION ${VERSION_RAW})
 
 # Must use GNUInstallDirs to install libraries into correct
 # locations on all platforms.
@@ -100,7 +111,6 @@ set(CMAKE_DEBUG_POSTFIX "d")
 # Script executed every time to check for changes
 set(VERSION_FILE "${CMAKE_SOURCE_DIR}/common/version.h")
 set(VERSION_DEPENDENCY "${VERSION_FILE}.notgenerated")
-find_package(Python3 COMPONENTS Interpreter)
 add_custom_command(
   OUTPUT "${VERSION_DEPENDENCY}"
   BYPRODUCTS "${VERSION_FILE}"
@@ -248,9 +258,7 @@ endif()
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A template repository for C++ projects")
 set(CPACK_PACKAGE_VENDOR "Bradley Davis")
 set(CPACK_PACKAGE_CONTACT "Bradley Davis me@bradleydavis.tech")
-set(CPACK_PACKAGE_VERSION_MAJOR "0")
-set(CPACK_PACKAGE_VERSION_MINOR "1")
-set(CPACK_PACKAGE_VERSION_PATCH "1")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
 
 set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "any")
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "")
@@ -260,6 +268,8 @@ if(WIN32)
   set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
   set(CPACK_PACKAGE_DIRECTORY "${CMAKE_SOURCE_DIR}")
   set(CPACK_PACKAGE_FILE_NAME "archive")
+else()
+  set(CPACK_OUTPUT_FILE_PREFIX "${CMAKE_SOURCE_DIR}/output/packages")
 endif()
 
 include(CPack)

@@ -37,7 +37,7 @@ class Version:
     self.gitSHA = gitSHA
 
     versionList = re.search(
-        r"(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-[a-zA-Z\d][-a-zA-Z.\d]*)?", string)
+        r"(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)-?([a-zA-Z\d][-a-zA-Z.\d]*)?", string)
     self.major = int(versionList[1])
     self.minor = int(versionList[2])
     self.patch = int(versionList[3])
@@ -123,7 +123,8 @@ def makeAbsolute(f, directory):
 #  @return absolute path of file
 def findInParent(file, directory):
   while not os.path.isfile(os.path.join(directory, file)):
-    if os.path.dirname(os.path.realpath(directory)) == os.path.realpath(directory):
+    if os.path.dirname(os.path.realpath(directory)
+                       ) == os.path.realpath(directory):
       print("Error: could not file:", file)
       sys.exit(1)
     directory += "../"

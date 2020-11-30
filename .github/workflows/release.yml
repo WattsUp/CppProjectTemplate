@@ -146,7 +146,7 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: output\installer.exe
-          asset_name: ${{ github.event.repository.name }}Setup-${{ github.event.release.tag_name }}-x64.exe
+          asset_name: ${{ github.event.repository.name }}Setup-${{ github.event.release.tag_name }}-win64-x64.exe
           tag: ${{ github.ref }}
 
       - uses: actions/upload-artifact@v1
@@ -235,11 +235,73 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: output\installer.exe
-          asset_name: ${{ github.event.repository.name }}Setup-${{ github.event.release.tag_name }}-x86.exe
+          asset_name: ${{ github.event.repository.name }}Setup-${{ github.event.release.tag_name }}-win32-x86.exe
           tag: ${{ github.ref }}
 
       - uses: actions/upload-artifact@v1
         if: failure()
         with:
           name: windows-release-x86
+          path: .
+
+  linux:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Install ninja-build tool
+        uses: seanmiddleditch/gha-setup-ninja@v3
+        with:
+          destination: ${{ runner.workspace }}/ninja
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libspdlog-dev libgtest-dev libfmt-dev
+          cd /usr/src/googletest
+          sudo cmake .
+          sudo cmake --build . --target install
+
+      - name: Build and Test
+        shell: bash
+        run: |
+          EVENT_BUILD_PARALLEL=10
+          EVENT_CMAKE_CONFIG="Release"
+          EVENT_CMAKE_OPTIONS="-DCMAKE_BUILD_TYPE:STRING=Release -DBUILD_SHARED_LIBS=OFF"
+
+          mkdir -p build
+          cd build
+
+          CMAKE_CMD="cmake -G Ninja $EVENT_CMAKE_OPTIONS .."
+          (echo "[cmake configure] $CMAKE_CMD" && $CMAKE_CMD) || (echo "[cmake configure retry]" && rm -rf * && $CMAKE_CMD)
+
+          cmake --build . --config $EVENT_CMAKE_CONFIG --target package -- -j $EVENT_BUILD_PARALLEL
+
+          cd ..
+          mv output/packages/*.sh output/release.sh
+          mv output/packages/*.tar.gz output/release.tar.gz
+
+      - name: Upload Linux installer
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: output/release.sh
+          asset_name: ${{ github.event.repository.name }}-${{ github.event.release.tag_name }}-Linux-x64.sh
+          tag: ${{ github.ref }}
+
+      - name: Upload Linux archive
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: output/release.tar.gz
+          asset_name: ${{ github.event.repository.name }}-${{ github.event.release.tag_name }}-Linux-x64.tar.gz
+          tag: ${{ github.ref }}
+
+      - uses: actions/upload-artifact@v1
+        if: failure()
+        with:
+          name: linux-release-x64
           path: .

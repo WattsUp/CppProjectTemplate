@@ -102,6 +102,8 @@ jobs:
 
       - name: Install ninja-build tool
         uses: seanmiddleditch/gha-setup-ninja@v3
+        with:
+          destination: ${{ runner.workspace }}/ninja
 
       - name: Install dependencies
         run: |
