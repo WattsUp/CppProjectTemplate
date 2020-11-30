@@ -90,7 +90,8 @@ jobs:
         with:
           vcpkgArguments: spdlog:x64-windows gtest:x64-windows
           vcpkgDirectory: ${{ runner.workspace }}/vcpkg/
-          vcpkgGitCommitId: 8e76503a769e153dad8f4e7b2c95a152bb35edaa
+          # vcpkg version 2020.11.1
+          vcpkgGitCommitId: 0bf3923f9fab4001c00f0f429682a0853b5749e0
           vcpkgTriplet: x64-windows
 
       - name: Build Installer
@@ -179,7 +180,8 @@ jobs:
         with:
           vcpkgArguments: spdlog:x86-windows gtest:x86-windows
           vcpkgDirectory: ${{ runner.workspace }}/vcpkg/
-          vcpkgGitCommitId: 8e76503a769e153dad8f4e7b2c95a152bb35edaa
+          # vcpkg version 2020.04 to predate spdlog 1.6 when a level 4 warning was introduced
+          vcpkgGitCommitId: c7ab9d3110813979a873b2dbac630a9ab79850dc
           vcpkgTriplet: x86-windows
 
       - name: Build Installer
