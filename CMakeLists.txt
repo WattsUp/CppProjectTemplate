@@ -11,7 +11,18 @@ if(WIN32 AND NOT CMAKE_TOOLCHAIN_FILE)
   message(FATAL_ERROR "CMAKE_TOOLCHAIN_FILE must be set, see vcpkg integrate install")
 endif()
 
-project("project-template" DESCRIPTION "A template repository for C++ projects")
+# Set project version from git tag
+find_package(Python3 COMPONENTS Interpreter)
+execute_process(
+  COMMAND "${Python3_EXECUTABLE}"
+    "${CMAKE_SOURCE_DIR}/tools/CreateVersionFromGitTag.py"
+    --output-str "%M.%m.%p"
+    --quiet
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  OUTPUT_VARIABLE VERSION_RAW
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+project("project-template" DESCRIPTION "A template repository for C++ projects" VERSION ${VERSION_RAW})
 
 # Must use GNUInstallDirs to install libraries into correct
 # locations on all platforms.
@@ -55,14 +66,16 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/output/release-$
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/output/debug-${ARCHITECTURE}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/output/release-${ARCHITECTURE}")
 
+include(CTest)
+
 # Targets not included in the public distributable
 set (TARGETS_NODIST
-  "test"          # Unit tester common to all projects
+  "gtester"       # Unit tester common to all projects
   "installer-win" # Windows self-extracting installer
 )
 
 set (TARGETS_NODISTCONFIG
-  "default" # test
+  "default" # gtester
   "default" # installer-win
 )
 
@@ -98,7 +111,6 @@ set(CMAKE_DEBUG_POSTFIX "d")
 # Script executed every time to check for changes
 set(VERSION_FILE "${CMAKE_SOURCE_DIR}/common/version.h")
 set(VERSION_DEPENDENCY "${VERSION_FILE}.notgenerated")
-find_package(Python3 COMPONENTS Interpreter)
 add_custom_command(
   OUTPUT "${VERSION_DEPENDENCY}"
   BYPRODUCTS "${VERSION_FILE}"
@@ -178,9 +190,7 @@ foreach(INDEX RANGE ${TARGETS_LENGTH})
 
 endforeach()
 
-foreach(TARGET ${TARGETS_NODIST})
-  set_target_properties(${TARGET} PROPERTIES EXCLUDE_FROM_ALL ON)
-endforeach()
+set_target_properties("installer-win" PROPERTIES EXCLUDE_FROM_ALL ON)
 
 # Force rebuild of installer-win every time
 # Due to resource file updates not noticed
@@ -217,34 +227,38 @@ endif()
 
 set(EXES "")
 
-foreach(TARGET ${TARGETS_DIST})
-  if (WIN32)
-    install(TARGETS ${TARGET}
-            RUNTIME DESTINATION .
-            LIBRARY DESTINATION lib
-            ARCHIVE DESTINATION .)
-    set(EXE $<TARGET_FILE:${TARGET}>)
-    list(APPEND EXES ${EXE})
-  else()
-    install(TARGETS ${TARGET}
-            RUNTIME DESTINATION bin
-            LIBRARY DESTINATION lib
-            ARCHIVE DESTINATION lib)
-  endif()
-endforeach()
 
 if (WIN32)
+  list(LENGTH TARGETS_DISTCONFIG TARGETS_DIST_LENGTH)
+  math(EXPR TARGETS_DIST_LENGTH "${TARGETS_DIST_LENGTH} - 1")
+  foreach(INDEX RANGE ${TARGETS_DIST_LENGTH})
+    list(GET TARGETS_DIST ${INDEX} TARGET)
+    list(GET TARGETS_DISTCONFIG ${INDEX} CONFIG)
+    if (${CONFIG} MATCHES "^library$" OR ${CONFIG} MATCHES "^SHARED$" OR ${CONFIG} MATCHES "^STATIC$")
+      message("Not installing library target on Windows")
+    else()
+      install(TARGETS ${TARGET}
+              RUNTIME DESTINATION .
+              LIBRARY DESTINATION lib
+              ARCHIVE DESTINATION .)
+      set(EXE $<TARGET_FILE:${TARGET}>)
+      list(APPEND EXES ${EXE})
+    endif()
+  endforeach()
+
   install(DIRECTORY "res" DESTINATION .)
 else()
+  install(TARGETS ${TARGETS_DIST}
+          RUNTIME DESTINATION bin
+          LIBRARY DESTINATION lib
+          ARCHIVE DESTINATION lib)
   install(DIRECTORY "res" DESTINATION "bin/${PROJECT_NAME}")
 endif()
 
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A template repository for C++ projects")
 set(CPACK_PACKAGE_VENDOR "Bradley Davis")
 set(CPACK_PACKAGE_CONTACT "Bradley Davis me@bradleydavis.tech")
-set(CPACK_PACKAGE_VERSION_MAJOR "0")
-set(CPACK_PACKAGE_VERSION_MINOR "1")
-set(CPACK_PACKAGE_VERSION_PATCH "1")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
 
 set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "any")
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "")
@@ -254,27 +268,35 @@ if(WIN32)
   set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
   set(CPACK_PACKAGE_DIRECTORY "${CMAKE_SOURCE_DIR}")
   set(CPACK_PACKAGE_FILE_NAME "archive")
+else()
+  set(CPACK_OUTPUT_FILE_PREFIX "${CMAKE_SOURCE_DIR}/output/packages")
 endif()
 
 include(CPack)
 
 if (WIN32)
+  if(${ARCHITECTURE} STREQUAL "x64")
+    set(CPACK_ARCHIVE "${CPACK_PACKAGE_DIRECTORY}/_CPack_Packages/win64/ZIP/archive")
+  else()
+    set(CPACK_ARCHIVE "${CPACK_PACKAGE_DIRECTORY}/_CPack_Packages/win32/ZIP/archive")
+  endif()
   install(CODE
     "file(GET_RUNTIME_DEPENDENCIES
-            RESOLVED_DEPENDENCIES_VAR resolved_deps
-            UNRESOLVED_DEPENDENCIES_VAR unresolved_deps
-            EXECUTABLES ${EXES}
-            PRE_EXCLUDE_REGEXES \"api-ms.*\"
-            POST_INCLUDE_REGEXES \"${CMAKE_SOURCE_DIR}.*\"
-            POST_EXCLUDE_REGEXES \".*\"
-            )
-    file(COPY \${resolved_deps} DESTINATION \"${CPACK_PACKAGE_DIRECTORY}/_CPack_Packages/win32/ZIP/archive\")
+          RESOLVED_DEPENDENCIES_VAR resolved_deps
+          UNRESOLVED_DEPENDENCIES_VAR unresolved_deps
+          EXECUTABLES ${EXES}
+          PRE_EXCLUDE_REGEXES \"api-ms.*\"
+          POST_INCLUDE_REGEXES \"${CMAKE_SOURCE_DIR}.*\"
+          POST_EXCLUDE_REGEXES \".*\"
+          )
+    file(COPY \${resolved_deps} DESTINATION \"${CPACK_ARCHIVE}\")
     file(INSTALL \${resolved_deps} DESTINATION \"${CMAKE_INSTALL_PREFIX}\")"
   )
 endif()
 
 # CMake targets cannot have spaces, to have spaces in the output use the OUTPUT_NAME property
 set_target_properties("installer-win" PROPERTIES OUTPUT_NAME "${PROJECT_NAME}-installer")
+file(GENERATE OUTPUT "installerLocation.txt" CONTENT "$<TARGET_FILE:installer-win>")
 
 # Add libraries first to setup library include directives
 add_subdirectory("libraries")
@@ -289,3 +311,5 @@ add_subdirectory("installer-win")
 # Add each target subdirectory
 add_subdirectory("project-fractal")
 add_subdirectory("project-library")
+
+add_test(NAME gtest COMMAND "gtester")

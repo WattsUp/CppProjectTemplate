@@ -1,4 +1,7 @@
 # C++ Project Template #
+![Windows Build](https://github.com/WattsUp/CppProjectTemplate/workflows/Windows%20Build/badge.svg)
+![Linux Build](https://github.com/WattsUp/CppProjectTemplate/workflows/Linux%20Build/badge.svg)
+
 A template repository designed for medium to large C++ projects with multiple subprojects/executables.
 Includes
 * CMake build system

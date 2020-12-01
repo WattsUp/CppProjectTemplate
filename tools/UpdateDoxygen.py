@@ -12,43 +12,13 @@ import subprocess
 import sys
 import traceback
 
-## Checks current branch is the default branch, up to date with remote,
-#  unmodified, and tagged
+## Checks if current checkout is unmodified and tagged
 #  @param git executable
 #  @param quiet true will only print errors
 #  @param version Template.Version object of the repository
 #  @return true when current branch meets criteria, false otherwise
 def checkCurrentBranchStatus(git, quiet, version):
   status = True
-
-  # Fetch remote
-  Template.call([git, "fetch"])
-
-  # Get name of default branch
-  cmd = [git, "symbolic-ref", "refs/remotes/origin/HEAD"]
-  default = subprocess.check_output(cmd, universal_newlines=True).strip()
-  default = re.match(r"refs/remotes/origin/(.*)", default).group(1)
-
-  # Get branch status compared to remote
-  cmd = [git, "branch", "-vv"]
-  string = subprocess.check_output(cmd, universal_newlines=True).strip()
-  match = re.search(
-      r"^\* ([^\s]*) *[^\s]* *\[origin/([^\s:]*):? ?((ahead|behind) .*)?\]",
-      string,
-      flags=re.M)
-  if not match:
-    print("Current branch does not have a remote", file=sys.stderr)
-    status = False
-  else:
-    groups = match.groups()
-    if groups[1] != default:
-      print("Current branch is not default (origin/{})".format(default),
-            file=sys.stderr)
-      status = False
-    if groups[2]:
-      print("Current branch is {} of its remote".format(groups[2]),
-            file=sys.stderr)
-      status = False
 
   if version.modified:
     print("Repository is modified", file=sys.stderr)
@@ -100,7 +70,7 @@ def main():
   try:
     if not checkCurrentBranchStatus(args.git, args.quiet, version):
       if not args.f:
-        print("Current repository is not updated default branch", file=sys.stderr)
+        print("Current repository is not an unmodified tag", file=sys.stderr)
         sys.exit(1)
   except Exception:
     print("Exception checking branch status", file=sys.stderr)

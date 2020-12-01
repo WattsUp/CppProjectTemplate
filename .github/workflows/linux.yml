@@ -1,0 +1,144 @@
+name: Linux Build
+
+on:
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - "**.md"
+  pull_request:
+    branches:
+      - master
+    paths-ignore:
+      - "**.md"
+
+jobs:
+  ubuntu-18:
+    runs-on: ${{ matrix.os }}
+    if: "!contains(github.event.head_commit.message, 'ci skip')"
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-18.04]
+        EVENT_MATRIX:
+          - NONE
+          - SHARED_LIBS
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Cache Build
+        uses: actions/cache@v2
+        with:
+          path: build
+          key: ${{ matrix.os }}-${{ matrix.EVENT_MATRIX }}-v1
+
+      - name: Install ninja-build tool
+        uses: seanmiddleditch/gha-setup-ninja@v3
+        with:
+          destination: ${{ runner.workspace }}/ninja
+
+      - name: Prepare vcpkg
+        uses: lukka/run-vcpkg@v5
+        id: runvcpkg
+        with:
+          vcpkgArguments: spdlog:x64-linux gtest:x64-linux
+          vcpkgDirectory: ${{ runner.workspace }}/vcpkg/
+          # vcpkg version 2020.11.1
+          vcpkgGitCommitId: 0bf3923f9fab4001c00f0f429682a0853b5749e0
+          vcpkgTriplet: x64-windows
+
+      - name: Build and Test
+        shell: bash
+        run: |
+          EVENT_BUILD_PARALLEL=10
+          EVENT_TESTS_PARALLEL=1
+          EVENT_CMAKE_CONFIG="Release"
+
+          if [ "${{ matrix.EVENT_MATRIX }}" -eq "SHARED_LIBS" ]; then
+            EVENT_CMAKE_OPTIONS="-DCMAKE_BUILD_TYPE:STRING=Release -DBUILD_SHARED_LIBS=ON"
+          else
+            EVENT_CMAKE_OPTIONS="-DCMAKE_BUILD_TYPE:STRING=Release -DBUILD_SHARED_LIBS=OFF"
+          fi
+
+          mkdir -p build
+          cd build
+
+          CMAKE_CMD="cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=${{ runner.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake $EVENT_CMAKE_OPTIONS .."
+          (echo "[cmake configure] $CMAKE_CMD" && $CMAKE_CMD) || (echo "[cmake configure retry]" && rm -rf * && $CMAKE_CMD)
+
+          cmake --build . --config $EVENT_CMAKE_CONFIG --target all -- -j $EVENT_BUILD_PARALLEL
+
+          ctest -C $EVENT_CMAKE_CONFIG -T test --output-on-failure -j $EVENT_TESTS_PARALLEL
+
+      - uses: actions/upload-artifact@v1
+        if: failure()
+        with:
+          name: ${{ matrix.os }}-${{ matrix.EVENT_MATRIX }}
+          path: .
+
+  ubuntu-20:
+    runs-on: ${{ matrix.os }}
+    if: "!contains(github.event.head_commit.message, 'ci skip')"
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-20.04]
+        EVENT_MATRIX:
+          - NONE
+          - SHARED_LIBS
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Cache Build
+        uses: actions/cache@v2
+        with:
+          path: build
+          key: ${{ matrix.os }}-${{ matrix.EVENT_MATRIX }}-v1
+
+      - name: Install ninja-build tool
+        uses: seanmiddleditch/gha-setup-ninja@v3
+        with:
+          destination: ${{ runner.workspace }}/ninja
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libspdlog-dev libgtest-dev libfmt-dev
+          cd /usr/src/googletest
+          sudo cmake .
+          sudo cmake --build . --target install
+
+      - name: Build and Test
+        shell: bash
+        run: |
+          EVENT_BUILD_PARALLEL=10
+          EVENT_TESTS_PARALLEL=1
+          EVENT_CMAKE_CONFIG="Release"
+
+          if [ "${{ matrix.EVENT_MATRIX }}" -eq "SHARED_LIBS" ]; then
+            EVENT_CMAKE_OPTIONS="-DCMAKE_BUILD_TYPE:STRING=Release -DBUILD_SHARED_LIBS=ON"
+          else
+            EVENT_CMAKE_OPTIONS="-DCMAKE_BUILD_TYPE:STRING=Release -DBUILD_SHARED_LIBS=OFF"
+          fi
+
+          mkdir -p build
+          cd build
+
+          CMAKE_CMD="cmake -G Ninja $EVENT_CMAKE_OPTIONS .."
+          (echo "[cmake configure] $CMAKE_CMD" && $CMAKE_CMD) || (echo "[cmake configure retry]" && rm -rf * && $CMAKE_CMD)
+
+          cmake --build . --config $EVENT_CMAKE_CONFIG --target all -- -j $EVENT_BUILD_PARALLEL
+
+          ctest -C $EVENT_CMAKE_CONFIG -T test --output-on-failure -j $EVENT_TESTS_PARALLEL
+
+      - uses: actions/upload-artifact@v1
+        if: failure()
+        with:
+          name: ${{ matrix.os }}-${{ matrix.EVENT_MATRIX }}
+          path: .
